@@ -72,19 +72,10 @@ return [
     'triggers' => [
         'postType' => [
             'team' => [
-                'timeFields' => ['start_date', 'end_date'],
                 'targets' => [
                     ['type' => 'gutenberg', 'value' => 'ix/block-team'],
-                    ['type' => 'template', 'value' => 'template-places.php']
                 ]
             ],
         ],
-        'taxonomy' => [
-            'category' => [
-                'targets' => [
-                    ['type' => 'template', 'value' => 'template-places.php']
-                ]
-            ],
-        ]
     ]
 ];
