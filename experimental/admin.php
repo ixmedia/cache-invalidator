@@ -1,119 +1,165 @@
 <?php
-// Ajouter un menu de paramètres
-add_action('admin_menu', 'mon_plugin_add_admin_menu');
+class CacheInvalidatorAdmin {
+    public function __construct() {
+        add_action('admin_menu', [$this, 'addAdminMenu']);
+        add_action('admin_init', [$this, 'settingsInit']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueueAdminScripts']);
+    }
 
-function mon_plugin_add_admin_menu() {
-    add_options_page(
-        'Cache invalidation Settings',
-        'Cache Invalidation',
-        'manage_options',
-        'mon_plugin',
-        'mon_plugin_options_page'
-    );
-}
-// Afficher la page de paramètres
-function mon_plugin_options_page() {
-  ?>
-  <div class="wrap">
-      <h1>Mon Plugin Settings</h1>
-      <form action="options.php" method="post">
-          <?php
-          settings_fields('mon_plugin_options');
-          do_settings_sections('mon_plugin');
-          submit_button();
-          ?>
-      </form>
-  </div>
-  <?php
-}
-// Enregistrer les paramètres
-add_action('admin_init', 'mon_plugin_settings_init');
+    /**
+     * Add settings menu in the admin panel
+     */
+    public function addAdminMenu() {
+        add_options_page(
+            __('Cache Invalidation Settings', 'cache_invalidator'),
+            __('Cache Invalidation', 'cache_invalidator'),
+            'manage_options',
+            'cache_invalidator',
+            [$this, 'optionsPage']
+        );
+    }
 
-function mon_plugin_settings_init() {
-    register_setting('mon_plugin_options', 'mon_plugin_options');
+    /**
+     * Display the settings page
+     */
+    public function optionsPage() {
+        ?>
+        <div class="wrap">
+            <h1><?php _e('Cache Invalidation Settings', 'cache_invalidator'); ?></h1>
+            <form action="options.php" method="post">
+                <?php
+                settings_fields('cache_invalidator_options');
+                do_settings_sections('cache_invalidator');
+                submit_button();
+                ?>
+            </form>
+        </div>
+        <?php
+    }
 
-    // Section pour les triggers de type postType
-    add_settings_section(
-        'mon_plugin_post_type_section',
-        __('Post Type Triggers', 'mon_plugin'),
-        'mon_plugin_post_type_section_callback',
-        'mon_plugin'
-    );
+    /**
+     * Register settings and add settings sections and fields
+     */
+    public function settingsInit() {
+        register_setting('cache_invalidator_options', 'cache_invalidator_options');
 
-    add_settings_field(
-        'mon_plugin_post_type_triggers',
-        __('Post Type Triggers', 'mon_plugin'),
-        'mon_plugin_post_type_triggers_render',
-        'mon_plugin',
-        'mon_plugin_post_type_section'
-    );
+        // Section for postType triggers
+        add_settings_section(
+            'cache_invalidator_post_type_section',
+            __('Post Type Triggers', 'cache_invalidator'),
+            [$this, 'postTypeSectionCallback'],
+            'cache_invalidator'
+        );
 
-    // Section pour les triggers de type dateField
-    add_settings_section(
-        'mon_plugin_date_field_section',
-        __('Date Field Triggers', 'mon_plugin'),
-        'mon_plugin_date_field_section_callback',
-        'mon_plugin'
-    );
+        add_settings_field(
+            'cache_invalidator_post_type_triggers',
+            '',
+            [$this, 'postTypeTriggersRender'],
+            'cache_invalidator',
+            'cache_invalidator_post_type_section'
+        );
+    }
 
-    add_settings_field(
-        'mon_plugin_date_field_triggers',
-        __('Date Field Triggers', 'mon_plugin'),
-        'mon_plugin_date_field_triggers_render',
-        'mon_plugin',
-        'mon_plugin_date_field_section'
-    );
-}
+    /**
+     * Callback for the post type section
+     */
+    public function postTypeSectionCallback() {
+        echo __('Configure triggers for specific post types.', 'cache_invalidator');
+    }
 
-function mon_plugin_post_type_section_callback() {
-    echo __('Configure the triggers for specific post types.', 'mon_plugin');
-}
+    /**
+     * Render the post type triggers field
+     */
+    public function postTypeTriggersRender() {
+        // Get all registered post types
+        $post_types = get_post_types(['public' => true], 'objects');
 
-function mon_plugin_date_field_section_callback() {
-    echo __('Configure the triggers for date fields in post types.', 'mon_plugin');
-}
+        // Get the saved options
+        $options = get_option('cache_invalidator_options');
+        $postTypeTriggers = isset($options['postType']) ? $options['postType'] : [];
+        ?>
+        <div id="postTypeTriggersRepeater" data-template="<?php echo htmlspecialchars($this->getPostTypeTriggerHtml('__index__', null, $post_types)); ?>">
+            <button type="button" id="addPostTypeTrigger" class="button button-primary"><?php _e('Add Post Type Trigger', 'cache_invalidator'); ?></button>
+            <?php foreach ($postTypeTriggers as $index => $settings): ?>
+                <?php echo $this->getPostTypeTriggerHtml($index, $settings, $post_types); ?>
+            <?php endforeach; ?>
+        </div>
+        <?php
+    }
 
-function mon_plugin_post_type_triggers_render() {
-    $options = get_option('mon_plugin_options');
-    $postTypeTriggers = isset($options['postType']) ? $options['postType'] : [];
-    ?>
-    <div id="postTypeTriggersRepeater">
-        <button type="button" onclick="addPostTypeTrigger()">Add Post Type Trigger</button>
-        <?php foreach ($postTypeTriggers as $postType => $settings): ?>
-            <div class="repeater-item">
-                <input type="text" name="mon_plugin_options[postType][<?php echo esc_attr($postType); ?>][type]" value="<?php echo esc_attr($settings['type']); ?>" placeholder="Post Type" />
-                <textarea name="mon_plugin_options[postType][<?php echo esc_attr($postType); ?>][targets]" placeholder="Targets"><?php echo esc_textarea(json_encode($settings['targets'], JSON_PRETTY_PRINT)); ?></textarea>
-                <button type="button" onclick="removePostTypeTrigger(this)">Remove</button>
+    /**
+     * Generate HTML for post type triggers
+     *
+     * @param string $index The index of the trigger
+     * @param array|null $settings The settings for the trigger
+     * @param array $post_types The registered post types
+     * @return string The generated HTML
+     */
+    private function getPostTypeTriggerHtml($index, $settings, $post_types) {
+        $typeValue = $settings['type'] ?? '';
+        $targets = $settings['targets'] ?? [];
+        ob_start();
+        ?>
+        <div class="repeater-item">
+            <select name="cache_invalidator_options[postType][<?php echo esc_attr($index); ?>][type]" onchange="toggleTargetFields(this)">
+                <option value=""><?php _e('Select post type', 'cache_invalidator'); ?></option>
+                <?php foreach ($post_types as $type): ?>
+                    <option value="<?php echo esc_attr($type->name); ?>" <?php selected($typeValue, $type->name); ?>>
+                        <?php echo esc_html($type->label); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <div class="target-repeater" style="<?php echo empty($typeValue) ? 'display:none;' : ''; ?>">
+                <button type="button" class="button add-target"><?php _e('Add Target', 'cache_invalidator'); ?></button>
+                <div class="target-items" data-template="<?php echo htmlspecialchars($this->getTargetHtml($index, '__target_index__')); ?>">
+                    <?php foreach ($targets as $targetIndex => $target): ?>
+                        <?php echo $this->getTargetHtml($index, $targetIndex, $target); ?>
+                    <?php endforeach; ?>
+                </div>
             </div>
-        <?php endforeach; ?>
-    </div>
-    <?php
+            <button type="button" class="button-link delete" onclick="removePostTypeTrigger(this)"><?php _e('Remove Post Type Trigger', 'cache_invalidator'); ?></button>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    /**
+     * Generate HTML for targets
+     *
+     * @param string $postTypeIndex The index of the post type trigger
+     * @param string $targetIndex The index of the target
+     * @param array|null $target The target settings
+     * @return string The generated HTML
+     */
+    private function getTargetHtml($postTypeIndex, $targetIndex = '__target_index__', $target = null) {
+        $targetType = $target['type'] ?? '';
+        $targetValue = $target['value'] ?? '';
+        ob_start();
+        ?>
+        <div class="target-item">
+            <button type="button" class="remove-icon" onclick="removeTarget(this)" aria-label="<?php _e('Remove Target', 'cache_invalidator'); ?>">
+                &times;
+            </button>
+            <select name="cache_invalidator_options[postType][<?php echo esc_attr($postTypeIndex); ?>][targets][<?php echo esc_attr($targetIndex); ?>][type]" onchange="toggleTargetValueInput(this)">
+                <option value=""><?php _e('Select type', 'cache_invalidator'); ?></option>
+                <option value="template" <?php selected($targetType, 'template'); ?>><?php _e('Template', 'cache_invalidator'); ?></option>
+                <option value="gutenberg" <?php selected($targetType, 'gutenberg'); ?>><?php _e('Gutenberg', 'cache_invalidator'); ?></option>
+                <option value="home" <?php selected($targetType, 'home'); ?>><?php _e('Home', 'cache_invalidator'); ?></option>
+                <option value="layout" <?php selected($targetType, 'layout'); ?>><?php _e('Layout', 'cache_invalidator'); ?></option>
+            </select>
+            <input type="text" name="cache_invalidator_options[postType][<?php echo esc_attr($postTypeIndex); ?>][targets][<?php echo esc_attr($targetIndex); ?>][value]" placeholder="<?php _e('Target Value', 'cache_invalidator'); ?>" value="<?php echo esc_attr($targetValue); ?>" <?php if (!in_array($targetType, ['template', 'gutenberg'])) echo 'style="display:none;"'; ?>>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    /**
+     * Enqueue admin scripts and styles
+     */
+    public function enqueueAdminScripts() {
+        wp_enqueue_script('cache-invalidator-admin-script', plugin_dir_url(__FILE__) . 'admin.js', [], null, true);
+        wp_enqueue_style('cache-invalidator-admin-style', plugin_dir_url(__FILE__) . 'admin-style.css', [], null);
+    }
 }
 
-function mon_plugin_date_field_triggers_render() {
-    $options = get_option('mon_plugin_options');
-    $dateFieldTriggers = isset($options['dateField']) ? $options['dateField'] : [];
-    ?>
-    <div id="dateFieldTriggersRepeater">
-        <button type="button" onclick="addDateFieldTrigger()">Add Date Field Trigger</button>
-        <?php foreach ($dateFieldTriggers as $postType => $settings): ?>
-            <div class="repeater-item">
-                <input type="text" name="mon_plugin_options[dateField][<?php echo esc_attr($postType); ?>][fieldNames]" value="<?php echo esc_attr(implode(',', $settings['fieldNames'])); ?>" placeholder="Field Names (comma separated)" />
-                <textarea name="mon_plugin_options[dateField][<?php echo esc_attr($postType); ?>][targets]" placeholder="Targets"><?php echo esc_textarea(json_encode($settings['targets'], JSON_PRETTY_PRINT)); ?></textarea>
-                <button type="button" onclick="removeDateFieldTrigger(this)">Remove</button>
-            </div>
-        <?php endforeach; ?>
-    </div>
-    <?php
-}
-
-add_action('admin_enqueue_scripts', 'mon_plugin_enqueue_admin_scripts');
-
-function mon_plugin_enqueue_admin_scripts() {
-    wp_enqueue_script('mon-plugin-admin-script', plugin_dir_url(__FILE__) . 'admin.js', [], null, true);
-}
-
-$options = get_option('mon_plugin_options');
-
-// var_dump($options);
-// die;
+new CacheInvalidatorAdmin();

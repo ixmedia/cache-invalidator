@@ -1,0 +1,79 @@
+.wrap .repeater-item {
+  background: #fff;
+  border: 1px solid #ccd0d4;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.wrap .repeater-item select,
+.wrap .repeater-item input[type="text"] {
+  flex-grow: 1;
+  margin-bottom: 10px;
+}
+
+.wrap .repeater-item .add-target {
+  margin-bottom: 10px;
+}
+
+.wrap .repeater-item button {
+  margin-left: 5px;
+}
+
+.wrap .repeater-item .target-item {
+  background: #f7f7f7;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccd0d4;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.wrap .repeater-item .target-item .remove-icon {
+  background: none;
+  border: none;
+  color: #d63638;
+  font-size: 20px;
+  cursor: pointer;
+  margin-right: 10px;
+  line-height: 1;
+}
+
+.wrap .repeater-item .target-item select,
+.wrap .repeater-item .target-item input[type="text"] {
+  margin-bottom: 0;
+}
+
+.wrap .repeater-item .target-item select {
+  flex-grow: 1;
+  margin-right: 10px; /* Add space between the select and the input */
+}
+
+.wrap .repeater-item .target-item input[type="text"] {
+  width: 200px; /* Fixed width for Target Value */
+}
+
+.button-link.delete {
+  color: #d63638;
+  border: 1px solid #d63638;
+  padding: 5px 10px;
+  text-decoration: none;
+  border-radius: 3px;
+  display: inline-block;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.button-link.delete:hover {
+  background: #d63638;
+  color: #fff;
+  text-decoration: none;
+}
+
+/* Add these styles to target th elements */
+.wrap th {
+  padding: 0;
+  width: auto;
+}
