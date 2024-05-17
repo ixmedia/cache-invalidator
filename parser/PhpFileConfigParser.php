@@ -28,13 +28,22 @@ class PhpFileConfigParser implements CacheInvalidationConfigParser {
     public function parseConfig(): array {
         $triggers = [];
 
+        if (empty($this->config['triggers'])) {
+            return $triggers;;
+        }
+
         foreach ($this->config['triggers'] as $type => $triggerConfigs) {
             if (!$this->isValidTriggerType($type)) {
                 continue;
             }
 
             foreach ($triggerConfigs as $key => $data) {
-                $targetObjects = $this->createTargetsFromData($data);
+                if (empty($data['targets'])) {
+                    trigger_error("Cache Invalidator: No targets specified for type: '$type'", E_USER_WARNING);
+                    continue;
+                }
+
+                $targetObjects = $this->createTargetsFromData($data['targets']);
                 if (empty($targetObjects)) {
                     continue;
                 }
@@ -54,7 +63,7 @@ class PhpFileConfigParser implements CacheInvalidationConfigParser {
     private function isValidTriggerType(string $type): bool {
         $validTriggerTypes = ['taxonomy', 'postType'];
         if (!in_array($type, $validTriggerTypes)) {
-            trigger_error("Invalid trigger type specified: '$type'. Allowed types are " . implode(', ', $validTriggerTypes) . ".", E_USER_WARNING);
+            trigger_error("Cache Invalidator: Invalid trigger type specified: '$type'. Allowed types are " . implode(', ', $validTriggerTypes) . ".", E_USER_WARNING);
             return false;
         }
         return true;
@@ -76,7 +85,7 @@ class PhpFileConfigParser implements CacheInvalidationConfigParser {
                 $timeFields = $data['timeFields'] ?? [];
                 return new PostTypeTrigger($key, $timeFields, $targetObjects);
             default:
-                trigger_error("Invalid trigger type specified: '$type'.", E_USER_WARNING);
+                trigger_error("Cache Invalidator: Invalid trigger type specified: '$type'.", E_USER_WARNING);
                 return null;
         }
     }
@@ -86,9 +95,10 @@ class PhpFileConfigParser implements CacheInvalidationConfigParser {
      * @param array $data Configuration data containing target details.
      * @return CacheInvalidationTarget[] Array of created target objects.
      */
-    private function createTargetsFromData(array $data): array {
+    private function createTargetsFromData(array $targetsData): array {
         $targetObjects = [];
-        foreach ($data['targets'] as $target) {
+
+        foreach ($targetsData as $target) {
             $createdTarget = $this->createTarget($target['type'], $target['value'] ?? null);
             if ($createdTarget !== null) {
                 $targetObjects[] = $createdTarget;
@@ -114,7 +124,7 @@ class PhpFileConfigParser implements CacheInvalidationConfigParser {
             case 'layout':
                 return new LayoutTarget($this->cacheManager);
             default:
-                trigger_error("Invalid target type specified: '$type'. Allowed types are 'template', 'gutenberg', 'home', 'layout'.", E_USER_WARNING);
+                trigger_error("Cache Invalidator: Invalid target type specified: '$type'. Allowed types are 'template', 'gutenberg', 'home', 'layout'.", E_USER_WARNING);
                 return null;
         }
     }
