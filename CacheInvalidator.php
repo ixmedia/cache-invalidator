@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/interfaces/CacheInvalidationTrigger.php';
-require_once __DIR__ . '/interfaces/CacheInvalidationTarget.php';
-require_once __DIR__ . '/interfaces/CacheInvalidationTarget.php';
+require_once __DIR__ . '/interfaces/CacheManager.php';
+require_once __DIR__ . '/interfaces/CacheInvalidationConfigParser.php';
 require_once __DIR__ . '/triggers/TaxonomyTrigger.php';
 require_once __DIR__ . '/triggers/PostTypeTrigger.php';
 require_once __DIR__ . '/targets/TemplatePageTarget.php';
@@ -11,22 +11,22 @@ require_once __DIR__ . '/targets/LayoutTarget.php';
 require_once __DIR__ . '/managers/W3TCManager.php';
 require_once __DIR__ . '/managers/WPManager.php';
 
-class CacheInvalidationManager {
+class CacheInvalidator {
     /**
      * Holds an array of triggers for cache invalidation.
      * @var CacheInvalidationTrigger[]
      */
     private array $triggers = [];
-    private CacheManager $cacheManager;
+    private CacheInvalidationConfigParser $configParser;
 
     /**
      * Constructor initializes triggers based on provided configuration and registers WordPress hooks.
      * @param array $config Configuration for initializing triggers.
      */
-    public function __construct(array $config) {
-        $this->cacheManager = $this->isW3TCPluginActive() ? new W3TCManager() : new WPManager();
+    public function __construct(CacheInvalidationConfigParser $configParser) {
+        $this->configParser = $configParser;
+        $this->triggers = $this->configParser->parseConfig();
         $this->createCacheInvalidationTable();
-        $this->initializeTriggers($config);
         $this->registerHooks();
     }
 
@@ -44,6 +44,29 @@ class CacheInvalidationManager {
      */
     public function getTriggers(): array {
         return $this->triggers;
+    }
+
+    /**
+     * Process cache invalidation based on database entries.
+     */
+    public function processQueue(): void {
+        $rows = CacheInvalidationHelper::getCacheInvalidationQueueEntries();
+
+        foreach ($rows as $row) {
+            $postType = $row['post_type'];
+            $postId = $row['post_id'];
+            $invalidationDate = $row['invalidation_date'];
+            $postStatus = get_post_status($postId);
+
+            foreach ($this->getTriggers() as $trigger) {
+                if ($trigger instanceof PostTypeTrigger && $trigger->getTriggerId() === $postType && $postStatus == "publish") {
+                    foreach ($trigger->getTargetsToInvalidate() as $target) {
+                        $target->invalidate();
+                    }
+                    CacheInvalidationHelper::deleteQueueEntry($postType, $postId, $invalidationDate);
+                }
+            }
+        }
     }
 
     /**
@@ -113,113 +136,6 @@ class CacheInvalidationManager {
             if ($trigger instanceof PostTypeTrigger && $trigger->matchesField($meta_key)) {
                 $trigger->queueForCheck($post_id);
             }
-        }
-    }
-
-    /**
-     * Checks if the W3TC plugin is active.
-     * @return bool Returns true if W3TC plugin is active, false otherwise.
-     */
-    private function isW3TCPluginActive(): bool {
-        // Check if the W3TC plugin is active
-        // You need to implement this method based on how plugin activation status is determined in WordPress
-        // For example, you can check if a specific function or class provided by W3TC exists
-        return function_exists('w3tc_flush_post');
-    }
-
-    /**
-     * Initializes triggers based on the provided configuration.
-     * @param array $config Configuration array detailing triggers.
-     */
-    private function initializeTriggers(array $config): void {
-        foreach ($config['triggers'] as $type => $triggers) {
-            if (!$this->isValidTriggerType($type)) {
-                continue;
-            }
-
-            foreach ($triggers as $key => $data) {
-                $targetObjects = $this->createTargetsFromData($data);
-                if (empty($targetObjects)) {
-                    continue;
-                }
-
-                $this->createAndAddTrigger($type, $key, $data, $targetObjects);
-            }
-        }
-    }
-
-    /**
-     * Validates if a trigger type is valid.
-     * @param string $type Type of the trigger.
-     * @return bool Returns true if the trigger type is valid.
-     */
-    private function isValidTriggerType(string $type): bool {
-        $validTriggerTypes = ['taxonomy', 'postType'];
-        if (!in_array($type, $validTriggerTypes)) {
-            trigger_error("Invalid trigger type specified: '$type'. Allowed types are " . implode(', ', $validTriggerTypes) . ".", E_USER_WARNING);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Creates and adds a trigger based on the type and configuration data.
-     * @param string $type Type of the trigger.
-     * @param string $key Identifier for the trigger configuration.
-     * @param array $data Configuration data for the trigger.
-     * @param array $targetObjects Array of target objects.
-     */
-    private function createAndAddTrigger(string $type, string $key, array $data, array $targetObjects): void {
-        switch ($type) {
-            case 'taxonomy':
-                $this->triggers[] = new TaxonomyTrigger($key, $targetObjects);
-                break;
-            case 'postType':
-                if (!empty($data['timeFields']))
-                    $this->triggers[] = new PostTypeTrigger($key, $data['timeFields'], $targetObjects);
-                else {
-                    $this->triggers[] = new PostTypeTrigger($key, [], $targetObjects);
-                }
-                break;
-        }
-    }
-
-    /**
-     * Creates target objects from configuration data.
-     * @param array $data Configuration data containing target details.
-     * @return array Array of created target objects.
-     */
-    private function createTargetsFromData(array $data): array {
-        $targetObjects = [];
-        foreach ($data['targets'] as $target) {
-            $createdTarget = $this->createTarget($target['type'], $target['value'] ?? null);
-            if ($createdTarget !== null) {
-                $targetObjects[] = $createdTarget;
-            }
-        }
-        return $targetObjects;
-    }
-
-
-    /**
-     * Creates a cache invalidation target based on type and value.
-     * @param string $type Type of the target.
-     * @param mixed $value Optional value specific to the target type.
-     * @return CacheInvalidationTarget|null Created target object or null if the type is invalid.
-     */
-    private function createTarget($type, $value = null): CacheInvalidationTarget {
-        switch ($type) {
-            case 'template':
-                return new TemplatePageTarget($value, $this->cacheManager);
-            case 'gutenberg':
-                return new GutenbergComponentTarget($value, $this->cacheManager);
-            case 'home':
-                return new HomePageTarget($this->cacheManager);
-            case 'layout':
-                return new LayoutTarget($this->cacheManager);
-            default:
-                trigger_error("Invalid target type specified: '$type'. Allowed types are 'template', 'gutenberg', 'home'.", E_USER_WARNING);
-                return null;
         }
     }
 

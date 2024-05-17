@@ -12,7 +12,6 @@ class WPManager implements CacheManager {
         if (function_exists('wp_cache_delete')) {
             // Clear cache using W3 Total Cache
             wp_cache_delete($cacheKey, 'page');
-            echo "WP Cache cleared for home page with ID: " . $cacheKey . PHP_EOL;
         } else {
             echo "WP Cache not active or no compatible cache clear function available." . PHP_EOL;
         }
@@ -26,7 +25,6 @@ class WPManager implements CacheManager {
         if (function_exists('wp_cache_flush')) {
             // Clear all cache using W3 Total Cache
             wp_cache_flush();
-            echo "All WP Cache cleared." . PHP_EOL;
         } else {
             echo "WP Cache not active or no compatible cache flush function available." . PHP_EOL;
         }

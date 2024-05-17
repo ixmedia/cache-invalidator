@@ -1,9 +1,6 @@
 <?php
 /**
- * @@TODO
- *  - Tester les trigger Taxonomy
- *
- * Configuration for Cache Invalidation System
+ * Configuration for Cache Invalidator
  *
  * This configuration file is used to define the triggers for initiating cache invalidation
  * across various sections of a WordPress site. Each trigger is linked to specific events

@@ -12,8 +12,6 @@ class W3TCManager implements CacheManager {
         if (function_exists('w3tc_flush_post')) {
             // Clear cache using W3 Total Cache
             w3tc_flush_post($cacheKey);
-            error_log( "W3 Total Cache cache cleared for key: " . $cacheKey . PHP_EOL);
-            echo "W3 Total Cache cache cleared for key: " . $cacheKey . PHP_EOL;
         } else {
             echo "W3 Total Cache not active or no compatible cache clear function available." . PHP_EOL;
         }
@@ -27,7 +25,6 @@ class W3TCManager implements CacheManager {
         if (function_exists('w3tc_flush_all')) {
             // Clear all cache using W3 Total Cache
             w3tc_flush_all();
-            echo "All W3 Total Cache cleared." . PHP_EOL;
         } else {
             echo "W3 Total Cache not active or no compatible cache flush function available." . PHP_EOL;
         }
