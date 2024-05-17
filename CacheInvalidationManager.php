@@ -4,10 +4,10 @@ require_once __DIR__ . '/interfaces/CacheInvalidationTarget.php';
 require_once __DIR__ . '/interfaces/CacheInvalidationTarget.php';
 require_once __DIR__ . '/triggers/TaxonomyTrigger.php';
 require_once __DIR__ . '/triggers/PostTypeTrigger.php';
-require_once __DIR__ . '/triggers/DateFieldTrigger.php';
 require_once __DIR__ . '/targets/TemplatePageTarget.php';
 require_once __DIR__ . '/targets/GutenbergComponentTarget.php';
 require_once __DIR__ . '/targets/HomePageTarget.php';
+require_once __DIR__ . '/targets/LayoutTarget.php';
 require_once __DIR__ . '/managers/W3TCManager.php';
 require_once __DIR__ . '/managers/WPManager.php';
 
@@ -39,16 +39,11 @@ class CacheInvalidationManager {
     }
 
     /**
-     * Triggers cache invalidation if conditions are met.
+     * Get all triggers.
+     * @return CacheInvalidationTrigger[] Array of triggers.
      */
-    public function invalidateCache(): void {
-        foreach ($this->triggers as $trigger) {
-            if ($trigger->shouldInvalidate()) {
-                foreach ($trigger->getTargetsToInvalidate() as $target) {
-                    $target->invalidate();
-                }
-            }
-        }
+    public function getTriggers(): array {
+        return $this->triggers;
     }
 
     /**
@@ -58,20 +53,23 @@ class CacheInvalidationManager {
      * @param int $postId ID of the post being saved.
      */
     public function onPostSave(int $postId): void {
-        $this->invalidateCacheForPost($postId);
+        // Vérifiez si c'est une sauvegarde automatique pour éviter des boucles infinies
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+
+        foreach ($this->triggers as $trigger) {
+            if ($trigger instanceof PostTypeTrigger) {
+
+                if ($trigger->shouldInvalidate($postId)) {
+                    foreach ($trigger->getTargetsToInvalidate() as $target) {
+                        $target->invalidate();
+                    }
+                }
+                $trigger->queueForCheck($postId);
+            }
+        }
     }
-
-
-    /**
-     * Handles post delete actions to potentially invalidate cache.
-     * Note: $postId is passed as a parameter because this function is a callback for WordPress hooks
-     * that provide the post ID when a post is deleted. This ID is used to determine which cache entries to invalidate.
-     * @param int $postId ID of the post being deleted.
-     */
-    public function onPostDelete(int $postId): void {
-        $this->invalidateCacheForPost($postId);
-    }
-
 
     /**
      * Handles term change actions to potentially invalidate cache.
@@ -81,7 +79,18 @@ class CacheInvalidationManager {
      * @param int $termId ID of the term being modified.
      */
     public function onTermChange(int $termId): void {
-        $this->invalidateCacheForTerm();
+        // Vérifiez si c'est une sauvegarde automatique pour éviter des boucles infinies
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+
+        foreach ($this->triggers as $trigger) {
+            if ($trigger instanceof TaxonomyTrigger && $trigger->shouldInvalidate($termId)) {
+                foreach ($trigger->getTargetsToInvalidate() as $target) {
+                    $target->invalidate();
+                }
+            }
+        }
     }
 
     /**
@@ -94,8 +103,13 @@ class CacheInvalidationManager {
      * @param mixed $meta_value New meta value.
      */
     public function onPostMetaChange($meta_id, $post_id, $meta_key, $meta_value): void {
+        // Vérifiez si c'est une sauvegarde automatique pour éviter des boucles infinies
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+
         foreach ($this->triggers as $trigger) {
-            if ($trigger instanceof DateFieldTrigger && $trigger->matchesField($meta_key)) {
+            if ($trigger instanceof PostTypeTrigger && $trigger->matchesField($meta_key)) {
                 $trigger->queueForCheck($post_id);
             }
         }
@@ -139,7 +153,7 @@ class CacheInvalidationManager {
      * @return bool Returns true if the trigger type is valid.
      */
     private function isValidTriggerType(string $type): bool {
-        $validTriggerTypes = ['taxonomy', 'postType', 'dateField'];
+        $validTriggerTypes = ['taxonomy', 'postType'];
         if (!in_array($type, $validTriggerTypes)) {
             trigger_error("Invalid trigger type specified: '$type'. Allowed types are " . implode(', ', $validTriggerTypes) . ".", E_USER_WARNING);
             return false;
@@ -160,27 +174,12 @@ class CacheInvalidationManager {
                 $this->triggers[] = new TaxonomyTrigger($key, $targetObjects);
                 break;
             case 'postType':
-                $this->triggers[] = new PostTypeTrigger($key, $targetObjects);
+                if (!empty($data['timeFields']))
+                    $this->triggers[] = new PostTypeTrigger($key, $data['timeFields'], $targetObjects);
+                else {
+                    $this->triggers[] = new PostTypeTrigger($key, [], $targetObjects);
+                }
                 break;
-            case 'dateField':
-                $this->processDateFieldTriggers($key, $data, $targetObjects);
-                break;
-        }
-    }
-
-    /**
-     * Processes date field triggers.
-     * @param string $postType Post type related to the trigger.
-     * @param array $dateTrigger Specific configuration for date trigger.
-     * @param array $targetObjects Targets to be invalidated.
-     */
-    private function processDateFieldTriggers(string $postType, array $dateTrigger, array $targetObjects): void {
-        if ($this->isValidDateTrigger($dateTrigger)) {
-            $this->triggers[] = new DateFieldTrigger(
-                $postType,
-                $dateTrigger['fieldNames'],
-                $targetObjects
-            );
         }
     }
 
@@ -200,19 +199,6 @@ class CacheInvalidationManager {
         return $targetObjects;
     }
 
-    /**
-     * Validates date trigger configuration.
-     * @param array $dateTrigger Date trigger configuration to validate.
-     * @return bool Returns true if the configuration is valid.
-     */
-    private function isValidDateTrigger(array $dateTrigger): bool {
-        if (empty($dateTrigger['fieldNames'])) {
-            trigger_error("Error in fieldNames configuration: 'fieldNames' is required.", E_USER_WARNING);
-            return false;
-        }
-
-        return true;
-    }
 
     /**
      * Creates a cache invalidation target based on type and value.
@@ -228,39 +214,11 @@ class CacheInvalidationManager {
                 return new GutenbergComponentTarget($value, $this->cacheManager);
             case 'home':
                 return new HomePageTarget($this->cacheManager);
+            case 'layout':
+                return new LayoutTarget($this->cacheManager);
             default:
                 trigger_error("Invalid target type specified: '$type'. Allowed types are 'template', 'gutenberg', 'home'.", E_USER_WARNING);
                 return null;
-        }
-    }
-
-    /**
-     * Handles invalidation for specific posts, potentially based on post type triggers.
-     * @param int $postId ID of the post to check for cache invalidation.
-     */
-    private function invalidateCacheForPost(int $postId): void {
-        foreach ($this->triggers as $trigger) {
-            if ($trigger instanceof PostTypeTrigger && $trigger->shouldInvalidate()) {
-                foreach ($trigger->getTargetsToInvalidate() as $target) {
-                    $target->invalidate();
-                }
-            } elseif ($trigger instanceof DateFieldTrigger) {
-                $trigger->queueForCheck($postId);
-            }
-        }
-    }
-
-    /**
-     * Handles invalidation for terms, potentially based on taxonomy triggers.
-     * @param int $termId ID of the term to check for cache invalidation.
-     */
-    private function invalidateCacheForTerm(): void {
-        foreach ($this->triggers as $trigger) {
-            if ($trigger instanceof TaxonomyTrigger && $trigger->shouldInvalidate()) {
-                foreach ($trigger->getTargetsToInvalidate() as $target) {
-                    $target->invalidate();
-                }
-            }
         }
     }
 
@@ -270,7 +228,7 @@ class CacheInvalidationManager {
     private function registerHooks(): void {
         // Register WordPress hooks
         add_action('save_post', [$this, 'onPostSave']);
-        add_action('delete_post', [$this, 'onPostDelete']);
+        add_action('delete_post', [$this, 'onPostSave']);
         add_action('created_term', [$this, 'onTermChange']);
         add_action('edited_term', [$this, 'onTermChange']);
         add_action('delete_term', [$this, 'onTermChange']);
@@ -290,12 +248,12 @@ class CacheInvalidationManager {
 
         $charset_collate = $wpdb->get_charset_collate();
         $sql = "CREATE TABLE $table_name (
-            id INT NOT NULL AUTO_INCREMENT,
             post_type VARCHAR(255) NOT NULL,
+            post_id BIGINT NOT NULL,
             invalidation_date DATETIME NOT NULL,
-            checked_at DATETIME DEFAULT NULL,
             created_at DATETIME NOT NULL,
-            PRIMARY KEY (id)
+            PRIMARY KEY (post_type, post_id, invalidation_date),
+            INDEX idx_invalidation_date (invalidation_date)
         ) $charset_collate;";
 
         // Include WordPress database upgrade file

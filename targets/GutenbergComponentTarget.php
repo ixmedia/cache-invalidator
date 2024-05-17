@@ -31,12 +31,7 @@ class GutenbergComponentTarget implements CacheInvalidationTarget {
 
         // Exécuter la requête
         $post_ids = $wpdb->get_col($sql);
-        error_log("######################################");
-        error_log($wpdb->last_query);
-        // die();
-        error_log(json_encode($post_ids), JSON_PRETTY_PRINT);
-        error_log("######################################");
-        // Vérifier si des posts ont été trouvés
+
         if (!empty($post_ids)) {
             foreach ($post_ids as $post_id) {
                 $this->cacheManager->invalidateCache($post_id);

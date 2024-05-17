@@ -7,4 +7,5 @@ interface CacheManager {
      * @return void
      */
     public function invalidateCache(string $cacheKey): void;
+    public function invalidateAllCache(): void;
 }

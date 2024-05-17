@@ -10,6 +10,11 @@ class TaxonomyTrigger implements CacheInvalidationTrigger {
         $this->targets = $targets;
     }
 
+    public function getTriggerId(): string
+    {
+        return $this->taxonomyName;
+    }
+
     /**
      * @return CacheInvalidationTarget[]
      */
@@ -17,10 +22,11 @@ class TaxonomyTrigger implements CacheInvalidationTrigger {
         return $this->targets;
     }
 
-    public function shouldInvalidate(): bool {
+    public function shouldInvalidate($termId): bool {
         // Check if the current taxonomy matches the specified taxonomy name
-        $currentTaxonomy = isset($_POST['taxonomy']) ? sanitize_text_field($_POST['taxonomy']) : '';
-        return $currentTaxonomy === $this->taxonomyName;
+
+        // @@TODO, recupere le nom de la taxonomy du term
+        return $termId === $this->getTriggerId();
     }
 
 }

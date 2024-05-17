@@ -46,7 +46,7 @@ class HomePageTarget implements CacheInvalidationTarget {
 
             foreach ($languages as $language) {
                 // Get the home page ID in this language
-                $home_id = apply_filters('wpml_object_id', get_option('page_on_front'), 'page', true, $language['id']);
+                $home_id = apply_filters('wpml_object_id', get_option('page_on_front'), 'page', true, $language['language_code']);
 
                 if ($home_id) {
                     // Store the home page ID in the array

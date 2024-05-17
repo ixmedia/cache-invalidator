@@ -18,6 +18,7 @@ class TemplatePageTarget implements CacheInvalidationTarget {
         // Get the page IDs with the specified template
         $page_ids = $this->getPageIdsWithTemplate();
 
+
         if (!empty($page_ids)) {
             foreach ($page_ids as $page_id) {
                 $this->cacheManager->invalidateCache($page_id);
