@@ -49,6 +49,7 @@ class CacheInvalidationHelper {
         global $wpdb;
         $table = $wpdb->prefix . 'cache_invalidation_queue';
         $current_time = current_time('mysql');
+
         return $wpdb->get_results($wpdb->prepare("SELECT * FROM $table WHERE invalidation_date <= %s", $current_time), ARRAY_A);
     }
 

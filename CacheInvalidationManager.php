@@ -57,7 +57,6 @@ class CacheInvalidationManager {
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
             return;
         }
-
         foreach ($this->triggers as $trigger) {
             if ($trigger instanceof PostTypeTrigger) {
 
@@ -77,15 +76,17 @@ class CacheInvalidationManager {
      * that provide the term ID. While $termId is not used within this method, it is necessary to
      * match the expected signature for WordPress action hooks.
      * @param int $termId ID of the term being modified.
+     * @param int $ttId Term taxonomy ID being modified.
+     * @param string $taxonomy Taxonomy slug.
      */
-    public function onTermChange(int $termId): void {
+    public function onTermChange(int $termId, int $ttId, string $taxonomy): void {
         // Vérifiez si c'est une sauvegarde automatique pour éviter des boucles infinies
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
             return;
         }
 
         foreach ($this->triggers as $trigger) {
-            if ($trigger instanceof TaxonomyTrigger && $trigger->shouldInvalidate($termId)) {
+            if ($trigger instanceof TaxonomyTrigger && $trigger->shouldInvalidate($taxonomy)) {
                 foreach ($trigger->getTargetsToInvalidate() as $target) {
                     $target->invalidate();
                 }
@@ -229,9 +230,9 @@ class CacheInvalidationManager {
         // Register WordPress hooks
         add_action('save_post', [$this, 'onPostSave']);
         add_action('delete_post', [$this, 'onPostSave']);
-        add_action('created_term', [$this, 'onTermChange']);
-        add_action('edited_term', [$this, 'onTermChange']);
-        add_action('delete_term', [$this, 'onTermChange']);
+        add_action('created_term', [$this, 'onTermChange'], 10, 3);
+        add_action('edited_term', [$this, 'onTermChange'], 10, 3);
+        add_action('delete_term', [$this, 'onTermChange'], 10, 3);
         add_action('updated_post_meta', [$this, 'onPostMetaChange'], 10, 4);
         add_action('added_post_meta', [$this, 'onPostMetaChange'], 10, 4);
     }

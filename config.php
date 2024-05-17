@@ -81,6 +81,13 @@ return [
                     ['type' => 'template', 'value' => 'template-places.php']
                 ]
             ],
+        ],
+        'taxonomy' => [
+            'category' => [
+                'targets' => [
+                    ['type' => 'template', 'value' => 'template-places.php']
+                ]
+            ],
         ]
     ]
 ];

@@ -22,11 +22,9 @@ class TaxonomyTrigger implements CacheInvalidationTrigger {
         return $this->targets;
     }
 
-    public function shouldInvalidate($termId): bool {
+    public function shouldInvalidate($taxonomy): bool {
         // Check if the current taxonomy matches the specified taxonomy name
-
-        // @@TODO, recupere le nom de la taxonomy du term
-        return $termId === $this->getTriggerId();
+        return $taxonomy === $this->getTriggerId();
     }
 
 }
