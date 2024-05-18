@@ -48,11 +48,11 @@
 
 .wrap .repeater-item .target-item select {
   flex-grow: 1;
-  margin-right: 10px; /* Add space between the select and the input */
+  margin-right: 10px;
 }
 
 .wrap .repeater-item .target-item input[type="text"] {
-  width: 200px; /* Fixed width for Target Value */
+  width: 200px;
 }
 
 .button-link.delete {
@@ -72,8 +72,11 @@
   text-decoration: none;
 }
 
-/* Add these styles to target th elements */
 .wrap th {
   padding: 0;
   width: auto;
+}
+
+#addPostTypeTrigger {
+  margin-bottom: 15px;
 }
