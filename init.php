@@ -13,6 +13,9 @@ function initialize_cache_invalidator() {
   global $cacheInvalidator;
 
   $config = require __DIR__ . '/config.php';
+
+  // error_log(json_encode($config), JSON_PRETTY_PRINT);
+  // error_log(json_encode(get_option('cache_invalidator_options')), JSON_PRETTY_PRINT);
   $configParser = new PhpFileConfigParser($config);
   $cacheInvalidator = new CacheInvalidator($configParser);
 }
@@ -21,6 +24,6 @@ add_action('plugins_loaded', 'initialize_cache_invalidator');
 
 // Optionally, load admin-specific functions or pages
 if (is_admin()) {
-  require_once __DIR__ . '/experimental/CacheInvalidatorAdmin.php';
+  require_once __DIR__ . '/admin/CacheInvalidatorAdmin.php';
   new CacheInvalidatorAdmin();
 }
