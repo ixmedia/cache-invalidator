@@ -1,5 +1,7 @@
 <?php
 class CacheInvalidatorAdmin {
+    private $optionName = 'cache_invalidator_options';
+
     public function __construct() {
         add_action('admin_menu', [$this, 'addAdminMenu']);
         add_action('admin_init', [$this, 'settingsInit']);
@@ -28,7 +30,7 @@ class CacheInvalidatorAdmin {
             <h1><?php _e('Cache Invalidation Settings', 'cache_invalidator'); ?></h1>
             <form action="options.php" method="post">
                 <?php
-                settings_fields('cache_invalidator_options');
+                settings_fields($this->optionName);
                 do_settings_sections('cache_invalidator');
                 submit_button();
                 ?>
@@ -41,7 +43,7 @@ class CacheInvalidatorAdmin {
      * Register settings and add settings sections and fields
      */
     public function settingsInit() {
-        register_setting('cache_invalidator_options', 'cache_invalidator_options');
+        register_setting($this->optionName, $this->optionName);
 
         // Section for postType triggers
         add_settings_section(
@@ -75,7 +77,7 @@ class CacheInvalidatorAdmin {
         $post_types = get_post_types([], 'objects');
 
         // Get the saved options
-        $options = get_option('cache_invalidator_options');
+        $options = get_option($this->optionName);
         $postTypeTriggers = isset($options['postType']) ? $options['postType'] : [];
         ?>
         <div id="postTypeTriggersRepeater" data-template="<?php echo htmlspecialchars($this->getPostTypeTriggerHtml('__index__', null, $post_types)); ?>">
@@ -101,7 +103,7 @@ class CacheInvalidatorAdmin {
         ob_start();
         ?>
         <div class="repeater-item">
-            <select name="cache_invalidator_options[postType][<?php echo esc_attr($index); ?>][type]" onchange="toggleTargetFields(this)">
+            <select name="<?php echo $this->optionName; ?>[postType][<?php echo esc_attr($index); ?>][type]" onchange="toggleTargetFields(this)">
                 <option value=""><?php _e('Select post type', 'cache_invalidator'); ?></option>
                 <?php foreach ($post_types as $type): ?>
                     <option value="<?php echo esc_attr($type->name); ?>" <?php selected($typeValue, $type->name); ?>>
@@ -140,14 +142,14 @@ class CacheInvalidatorAdmin {
             <button type="button" class="remove-icon" onclick="removeTarget(this)" aria-label="<?php _e('Remove Target', 'cache_invalidator'); ?>">
                 &times;
             </button>
-            <select name="cache_invalidator_options[postType][<?php echo esc_attr($postTypeIndex); ?>][targets][<?php echo esc_attr($targetIndex); ?>][type]" onchange="toggleTargetValueInput(this)">
+            <select name="<?php echo $this->optionName; ?>[postType][<?php echo esc_attr($postTypeIndex); ?>][targets][<?php echo esc_attr($targetIndex); ?>][type]" onchange="toggleTargetValueInput(this)">
                 <option value=""><?php _e('Select type', 'cache_invalidator'); ?></option>
                 <option value="template" <?php selected($targetType, 'template'); ?>><?php _e('Template', 'cache_invalidator'); ?></option>
                 <option value="gutenberg" <?php selected($targetType, 'gutenberg'); ?>><?php _e('Gutenberg', 'cache_invalidator'); ?></option>
                 <option value="home" <?php selected($targetType, 'home'); ?>><?php _e('Home', 'cache_invalidator'); ?></option>
                 <option value="layout" <?php selected($targetType, 'layout'); ?>><?php _e('Layout', 'cache_invalidator'); ?></option>
             </select>
-            <input type="text" name="cache_invalidator_options[postType][<?php echo esc_attr($postTypeIndex); ?>][targets][<?php echo esc_attr($targetIndex); ?>][value]" placeholder="<?php _e('Target Value', 'cache_invalidator'); ?>" value="<?php echo esc_attr($targetValue); ?>" <?php if (!in_array($targetType, ['template', 'gutenberg'])) echo 'style="display:none;"'; ?>>
+            <input type="text" name="<?php echo $this->optionName; ?>[postType][<?php echo esc_attr($postTypeIndex); ?>][targets][<?php echo esc_attr($targetIndex); ?>][value]" placeholder="<?php _e('Target Value', 'cache_invalidator'); ?>" value="<?php echo esc_attr($targetValue); ?>" <?php if (!in_array($targetType, ['template', 'gutenberg'])) echo 'style="display:none;"'; ?>>
         </div>
         <?php
         return ob_get_clean();
@@ -157,9 +159,7 @@ class CacheInvalidatorAdmin {
      * Enqueue admin scripts and styles
      */
     public function enqueueAdminScripts() {
-        wp_enqueue_script('cache-invalidator-admin-script', plugin_dir_url(__FILE__) . 'admin.js', [], null, true);
-        wp_enqueue_style('cache-invalidator-admin-style', plugin_dir_url(__FILE__) . 'admin-style.css', [], null);
+        wp_enqueue_script('cache-invalidator-admin-script', plugin_dir_url(__FILE__) . 'assets/admin.js', [], null, true);
+        wp_enqueue_style('cache-invalidator-admin-style', plugin_dir_url(__FILE__) . 'assets/admin.css', [], null);
     }
 }
-
-new CacheInvalidatorAdmin();

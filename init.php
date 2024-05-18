@@ -21,5 +21,6 @@ add_action('plugins_loaded', 'initialize_cache_invalidator');
 
 // Optionally, load admin-specific functions or pages
 if (is_admin()) {
-  require_once __DIR__ . '/experimental/admin.php';
+  require_once __DIR__ . '/experimental/CacheInvalidatorAdmin.php';
+  new CacheInvalidatorAdmin();
 }
