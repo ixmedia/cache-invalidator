@@ -28,11 +28,12 @@ class PhpFileConfigParser implements CacheInvalidationConfigParser {
     public function parseConfig(): array {
         $triggers = [];
 
-        if (empty($this->config['triggers'])) {
-            return $triggers;;
+        if (empty($this->config)) {
+            trigger_error("Cache Invalidator: No trigger set.", E_USER_WARNING);
+            return $triggers;
         }
 
-        foreach ($this->config['triggers'] as $type => $triggerConfigs) {
+        foreach ($this->config as $type => $triggerConfigs) {
             if (!$this->isValidTriggerType($type)) {
                 continue;
             }

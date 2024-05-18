@@ -26,17 +26,18 @@
  *             This target does not require a 'value' field since it applies site-wide.
  *
  * Structure:
- * - 'triggers' (array): Contains different types of triggers based on site interactions.
- *    - 'taxonomy' (array): Triggers related to taxonomy events like category or tag updates.
- *        - Keys are taxonomy names (e.g., 'category', 'tag') which when updated, trigger cache invalidation.
+ * - 'postType' (array): Triggers related to specific post type events.
+ *        - Keys are post type names (e.g., 'post', 'page') which define triggers for post types.
+ *            - 'timeFields' (array, optional): Specific fields names in the post type that holds the date.
  *            - 'targets' (array): Lists targets where cache needs to be invalidated.
  *                - 'type' (string): Type of the target ('template', 'gutenberg', 'home', 'layout').
  *                - 'value' (string, optional): Identifier for the target, such as the template file name or block name.
  *
- *    - 'postType' (array): Triggers related to specific post type events.
- *        - Keys are post type names (e.g., 'post', 'page') which define triggers for post types.
- *            - 'timeFields' (array, optional): Specific fields names in the post type that holds the date.
- *            - 'targets' (array): Targets similar to taxonomy triggers.
+ *  - 'taxonomy' (array): Triggers related to taxonomy events like category or tag updates.
+ *        - Keys are taxonomy names (e.g., 'category', 'tag') which when updated, trigger cache invalidation.
+ *            - 'targets' (array): Lists targets where cache needs to be invalidated.
+ *                - 'type' (string): Type of the target ('template', 'gutenberg', 'home', 'layout').
+ *                - 'value' (string, optional): Identifier for the target, such as the template file name or block name.
  *
  *
  * Usage:
@@ -52,16 +53,14 @@
  * Here is the PHP code example of how you would set this up in the configuration:
  *
  * return [
- *     'triggers' => [
- *         'postType' => [
- *             'event' => [
- *                 'timeFields' => ['start_date', 'end_date'],
- *                 'targets' => [
- *                     ['type' => 'template', 'value' => 'template-events.php'],
- *                     ['type' => 'gutenberg', 'value' => 'ix/block-event'],
- *                     ['type' => 'home']
- *                     ['type' => 'layout']
- *                 ]
+ *     'postType' => [
+ *         'event' => [
+ *             'timeFields' => ['start_date', 'end_date'],
+ *             'targets' => [
+ *                 ['type' => 'template', 'value' => 'template-events.php'],
+ *                 ['type' => 'gutenberg', 'value' => 'ix/block-event'],
+ *                 ['type' => 'home'],
+ *                 ['type' => 'layout']
  *             ]
  *         ]
  *     ]
@@ -69,13 +68,13 @@
  */
 
 return [
-    'triggers' => [
-        'postType' => [
-            'team' => [
-                'targets' => [
-                    ['type' => 'gutenberg', 'value' => 'ix/block-team'],
-                ]
-            ],
+    'postType' => [
+        'team' => [
+            'targets' => [
+                ['type' => 'gutenberg', 'value' => 'ix/block-team'],
+            ]
         ],
-    ]
+    ],
 ];
+
+

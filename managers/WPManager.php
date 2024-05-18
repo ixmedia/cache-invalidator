@@ -12,8 +12,9 @@ class WPManager implements CacheManager {
         if (function_exists('wp_cache_delete')) {
             // Clear cache using W3 Total Cache
             wp_cache_delete($cacheKey, 'page');
+            trigger_error("WP Cache: cleared for key: " . $cacheKey, E_USER_NOTICE);
         } else {
-            echo "WP Cache not active or no compatible cache clear function available." . PHP_EOL;
+            trigger_error("WP Cache not active or no compatible cache clear function available.", E_ERROR);
         }
     }
 
@@ -25,8 +26,9 @@ class WPManager implements CacheManager {
         if (function_exists('wp_cache_flush')) {
             // Clear all cache using W3 Total Cache
             wp_cache_flush();
+            trigger_error("WP: All Cache cleared.", E_USER_NOTICE);
         } else {
-            echo "WP Cache not active or no compatible cache flush function available." . PHP_EOL;
+            trigger_error("WP Total Cache not active or no compatible cache flush function available.", E_ERROR);
         }
     }
 }

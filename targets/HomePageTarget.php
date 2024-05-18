@@ -23,7 +23,7 @@ class HomePageTarget implements CacheInvalidationTarget {
                 $this->cacheManager->invalidateCache($home_id);
             }
         } else {
-            echo "Failed to get home page ID." . PHP_EOL;
+            trigger_error("Cache Validator: Failed to get home page ID." , E_ERROR);
         }
     }
 
