@@ -10,6 +10,7 @@ require_once __DIR__ . '/../targets/HomePageTarget.php';
 require_once __DIR__ . '/../targets/LayoutTarget.php';
 require_once __DIR__ . '/../managers/W3TCManager.php';
 require_once __DIR__ . '/../managers/WPManager.php';
+
 class PhpFileConfigParser implements CacheInvalidationConfigParser {
     private CacheManager $cacheManager;
     private array $config;

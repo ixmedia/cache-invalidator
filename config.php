@@ -34,12 +34,12 @@
  *                - 'type' (string): Type of the target ('template', 'gutenberg', 'home', 'layout').
  *                - 'value' (string, optional): Identifier for the target, such as the template file name or block name.
  *
- *  - 'taxonomy' (array): Triggers related to taxonomy events like category or tag updates.
- *        - Keys are taxonomy names (e.g., 'category', 'tag') which when updated, trigger cache invalidation.
+ * - 'taxonomy' (array): Triggers related to taxonomy events like category or tag updates.
+ *        - Each item is an array with the following structure:
+ *            - 'type' (string): The taxonomy name (e.g., 'category', 'tag').
  *            - 'targets' (array): Lists targets where cache needs to be invalidated.
  *                - 'type' (string): Type of the target ('template', 'gutenberg', 'home', 'layout').
  *                - 'value' (string, optional): Identifier for the target, such as the template file name or block name.
- *
  *
  * Usage:
  * To utilize this configuration, ensure that the CacheInvalidationManager is properly initialized
@@ -65,17 +65,36 @@
  *                 ['type' => 'layout']
  *             ]
  *         ]
+ *     ],
+ *     'taxonomy' => [
+ *         [
+ *             'type' => 'category',
+ *             'targets' => [
+ *                 ['type' => 'template', 'value' => 'template-category.php'],
+ *                 ['type' => 'gutenberg', 'value' => 'core/categories'],
+ *                 ['type' => 'home'],
+ *                 ['type' => 'layout']
+ *             ]
+ *         ]
  *     ]
  * ];
  */
 
-return [
+ return [
     'postType' => [
         [
             'type' => 'team',
             'targets' => [
                 ['type' => 'gutenberg', 'value' => 'ix/block-team'],
             ]
-        ],
+        ]
     ],
+    'taxonomy' => [
+        [
+            'type' => 'category',
+            'targets' => [
+                ['type' => 'template', 'value' => 'template-category.php'],
+            ]
+        ]
+    ]
 ];
