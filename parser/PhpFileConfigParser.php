@@ -10,7 +10,6 @@ require_once __DIR__ . '/../targets/HomePageTarget.php';
 require_once __DIR__ . '/../targets/LayoutTarget.php';
 require_once __DIR__ . '/../managers/W3TCManager.php';
 require_once __DIR__ . '/../managers/WPManager.php';
-
 class PhpFileConfigParser implements CacheInvalidationConfigParser {
     private CacheManager $cacheManager;
     private array $config;
@@ -38,7 +37,7 @@ class PhpFileConfigParser implements CacheInvalidationConfigParser {
                 continue;
             }
 
-            foreach ($triggerConfigs as $key => $data) {
+            foreach ($triggerConfigs as $data) {
                 if (empty($data['targets'])) {
                     trigger_error("Cache Invalidator: No targets specified for type: '$type'", E_USER_WARNING);
                     continue;
@@ -49,7 +48,7 @@ class PhpFileConfigParser implements CacheInvalidationConfigParser {
                     continue;
                 }
 
-                $triggers[] = $this->createTrigger($type, $key, $data, $targetObjects);
+                $triggers[] = $this->createTrigger($type, $data['type'], $data, $targetObjects);
             }
         }
 

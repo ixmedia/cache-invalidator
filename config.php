@@ -27,8 +27,9 @@
  *
  * Structure:
  * - 'postType' (array): Triggers related to specific post type events.
- *        - Keys are post type names (e.g., 'post', 'page') which define triggers for post types.
- *            - 'timeFields' (array, optional): Specific fields names in the post type that holds the date.
+ *        - Each item is an array with the following structure:
+ *            - 'type' (string): The post type name (e.g., 'post', 'page').
+ *            - 'timeFields' (array, optional): Specific fields names in the post type that hold the date.
  *            - 'targets' (array): Lists targets where cache needs to be invalidated.
  *                - 'type' (string): Type of the target ('template', 'gutenberg', 'home', 'layout').
  *                - 'value' (string, optional): Identifier for the target, such as the template file name or block name.
@@ -54,7 +55,8 @@
  *
  * return [
  *     'postType' => [
- *         'event' => [
+ *         [
+ *             'type' => 'event',
  *             'timeFields' => ['start_date', 'end_date'],
  *             'targets' => [
  *                 ['type' => 'template', 'value' => 'template-events.php'],
@@ -69,12 +71,11 @@
 
 return [
     'postType' => [
-        'team' => [
+        [
+            'type' => 'team',
             'targets' => [
                 ['type' => 'gutenberg', 'value' => 'ix/block-team'],
             ]
         ],
     ],
 ];
-
-
