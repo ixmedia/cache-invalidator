@@ -72,7 +72,7 @@ class CacheInvalidatorAdmin {
      */
     public function postTypeTriggersRender() {
         // Get all registered post types
-        $post_types = get_post_types(['public' => true], 'objects');
+        $post_types = get_post_types([], 'objects');
 
         // Get the saved options
         $options = get_option('cache_invalidator_options');
