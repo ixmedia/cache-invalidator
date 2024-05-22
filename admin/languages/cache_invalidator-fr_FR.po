@@ -1,0 +1,77 @@
+msgid "Cache Invalidation Settings"
+msgstr "Paramètres de l'invalidation de cache"
+
+msgid "Cache Invalidation"
+msgstr "Invalidation de Cache"
+
+msgid "Post Type Triggers"
+msgstr "Déclencheurs de type de post"
+
+msgid "Configure triggers for specific post types."
+msgstr "Configurez les déclencheurs pour des types de posts spécifiques."
+
+msgid "Add Post Type Trigger"
+msgstr "Ajouter un déclencheur de type de post"
+
+msgid "Post Type"
+msgstr "Type de post"
+
+msgid "Time Fields"
+msgstr "Champs de temps"
+
+msgid "Add Time Field"
+msgstr "Ajouter un champ de temps"
+
+msgid "Targets"
+msgstr "Cibles"
+
+msgid "Add Target"
+msgstr "Ajouter une cible"
+
+msgid "Remove Post Type Trigger"
+msgstr "Supprimer le déclencheur de type de post"
+
+msgid "Taxonomy Triggers"
+msgstr "Déclencheurs de taxonomie"
+
+msgid "Configure triggers for specific taxonomies."
+msgstr "Configurez les déclencheurs pour des taxonomies spécifiques."
+
+msgid "Add Taxonomy Trigger"
+msgstr "Ajouter un déclencheur de taxonomie"
+
+msgid "Taxonomy"
+msgstr "Taxonomie"
+
+msgid "Remove Taxonomy Trigger"
+msgstr "Supprimer le déclencheur de taxonomie"
+
+msgid "Remove Time Field"
+msgstr "Supprimer le champ de temps"
+
+msgid "Remove Target"
+msgstr "Supprimer la cible"
+
+msgid "Select post type"
+msgstr "Sélectionner le type de post"
+
+msgid "Select taxonomy"
+msgstr "Sélectionner la taxonomie"
+
+msgid "Select type"
+msgstr "Sélectionner le type"
+
+msgid "Template"
+msgstr "Modèle"
+
+msgid "Gutenberg"
+msgstr "Gutenberg"
+
+msgid "Home"
+msgstr "Accueil"
+
+msgid "Layout"
+msgstr "Disposition"
+
+msgid "Target Value"
+msgstr "Valeur de la cible"

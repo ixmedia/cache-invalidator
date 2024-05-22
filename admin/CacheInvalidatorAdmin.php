@@ -6,6 +6,14 @@ class CacheInvalidatorAdmin {
         add_action('admin_menu', [$this, 'addAdminMenu']);
         add_action('admin_init', [$this, 'settingsInit']);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAdminScripts']);
+        add_action('plugins_loaded', [$this, 'loadTextDomain']);
+    }
+
+    /**
+     * Load the text domain for translation
+     */
+    public function loadTextDomain() {
+        load_plugin_textdomain('cache_invalidator', false, dirname(plugin_basename(__FILE__)) . '/languages');
     }
 
     /**
@@ -155,6 +163,7 @@ class CacheInvalidatorAdmin {
                     </option>
                 <?php endforeach; ?>
             </select>
+
             <div class="target-repeater" style="<?php echo empty($typeValue) ? 'display:none;' : ''; ?>">
                 <button type="button" class="button add-target"><?php _e('Add Target', 'cache_invalidator'); ?></button>
                 <div class="target-items" data-template="<?php echo htmlspecialchars($this->getTargetHtml($index, 'postType', '__target_index__')); ?>">
@@ -171,6 +180,7 @@ class CacheInvalidatorAdmin {
                     <?php endforeach; ?>
                 </div>
             </div>
+
             <button type="button" class="button-link delete" onclick="removePostTypeTrigger(this)"><?php _e('Remove Post Type Trigger', 'cache_invalidator'); ?></button>
         </div>
         <?php
