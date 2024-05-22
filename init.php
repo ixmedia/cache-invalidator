@@ -18,6 +18,8 @@ function initialize_cache_invalidator() {
     $config = require __DIR__ . '/config.php';
   }
 
+  // error_log(json_encode($config), JSON_PRETTY_PRINT);
+
   $configParser = new PhpFileConfigParser($config);
   $cacheInvalidator = new CacheInvalidator($configParser);
 }

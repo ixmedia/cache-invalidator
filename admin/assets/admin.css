@@ -13,7 +13,8 @@
   margin-bottom: 10px;
 }
 
-.wrap .repeater-item .add-target {
+.wrap .repeater-item .add-target,
+.wrap .repeater-item .add-time-field {
   margin-bottom: 10px;
 }
 
@@ -21,6 +22,7 @@
   margin-left: 5px;
 }
 
+.wrap .repeater-item .time-field-item,
 .wrap .repeater-item .target-item {
   background: #f7f7f7;
   padding: 10px;
@@ -31,7 +33,7 @@
   align-items: center;
 }
 
-.wrap .repeater-item .target-item .remove-icon {
+.wrap .repeater-item .remove-icon {
   background: none;
   border: none;
   color: #d63638;
@@ -41,9 +43,14 @@
   line-height: 1;
 }
 
+.wrap .repeater-item .time-field-item input[type="text"],
 .wrap .repeater-item .target-item select,
 .wrap .repeater-item .target-item input[type="text"] {
   margin-bottom: 0;
+}
+
+.wrap .repeater-item .time-field-item input[type="text"] {
+  flex-grow: 1;
 }
 
 .wrap .repeater-item .target-item select {
@@ -77,6 +84,7 @@
   width: auto;
 }
 
-#addPostTypeTrigger {
+#addPostTypeTrigger,
+#addTaxonomyTrigger {
   margin-bottom: 15px;
 }

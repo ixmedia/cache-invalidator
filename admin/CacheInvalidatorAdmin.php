@@ -131,6 +131,7 @@ class CacheInvalidatorAdmin {
         </div>
         <?php
     }
+
     /**
      * Generate HTML for post type triggers
      *
@@ -142,6 +143,7 @@ class CacheInvalidatorAdmin {
     private function getPostTypeTriggerHtml($index, $settings, $post_types) {
         $typeValue = $settings['type'] ?? '';
         $targets = $settings['targets'] ?? [];
+        $timeFields = $settings['timeFields'] ?? [];
         ob_start();
         ?>
         <div class="repeater-item">
@@ -158,6 +160,14 @@ class CacheInvalidatorAdmin {
                 <div class="target-items" data-template="<?php echo htmlspecialchars($this->getTargetHtml($index, 'postType', '__target_index__')); ?>">
                     <?php foreach ($targets as $targetIndex => $target): ?>
                         <?php echo $this->getTargetHtml($index, 'postType', $targetIndex, $target); ?>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <div class="time-fields-repeater">
+                <button type="button" class="button add-time-field"><?php _e('Add Time Field', 'cache_invalidator'); ?></button>
+                <div class="time-fields-items" data-template="<?php echo htmlspecialchars($this->getTimeFieldHtml($index, '__time_field_index__')); ?>">
+                    <?php foreach ($timeFields as $timeFieldIndex => $timeField): ?>
+                        <?php echo $this->getTimeFieldHtml($index, $timeFieldIndex, $timeField); ?>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -204,9 +214,28 @@ class CacheInvalidatorAdmin {
     }
 
     /**
+     * Generate HTML for time fields
+     *
+     * @param string $postTypeIndex The index of the post type trigger
+     * @param string $timeFieldIndex The index of the time field
+     * @param string|null $timeField The time field value
+     * @return string The generated HTML
+     */
+    private function getTimeFieldHtml($postTypeIndex, $timeFieldIndex = '__time_field_index__', $timeField = '') {
+        ob_start();
+        ?>
+        <div class="time-field-item">
+            <button type="button" class="remove-icon" onclick="removeTimeField(this)" aria-label="<?php _e('Remove Time Field', 'cache_invalidator'); ?>">&times;</button>
+            <input type="text" name="<?php echo $this->optionName; ?>[postType][<?php echo esc_attr($postTypeIndex); ?>][timeFields][<?php echo esc_attr($timeFieldIndex); ?>]" placeholder="<?php _e('Time Field', 'cache_invalidator'); ?>" value="<?php echo esc_attr($timeField); ?>">
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    /**
      * Generate HTML for targets
      *
-     * @param string $elementIndex The index of the post type trigger
+     * @param string $elementIndex The index of the post type or taxonomy trigger
      * @param string $targetIndex The index of the target
      * @param array|null $target The target settings
      * @return string The generated HTML
@@ -217,17 +246,15 @@ class CacheInvalidatorAdmin {
         ob_start();
         ?>
         <div class="target-item">
-            <button type="button" class="remove-icon" onclick="removeTarget(this)" aria-label="<?php _e('Remove Target', 'cache_invalidator'); ?>">
-                &times;
-            </button>
-            <select name="<?php echo $this->optionName; ?>[<?php echo $elementType?>][<?php echo esc_attr($elementIndex); ?>][targets][<?php echo esc_attr($targetIndex); ?>][type]" onchange="toggleTargetValueInput(this)">
+            <button type="button" class="remove-icon" onclick="removeTarget(this)" aria-label="<?php _e('Remove Target', 'cache_invalidator'); ?>">&times;</button>
+            <select name="<?php echo $this->optionName; ?>[<?php echo $elementType; ?>][<?php echo esc_attr($elementIndex); ?>][targets][<?php echo esc_attr($targetIndex); ?>][type]" onchange="toggleTargetValueInput(this)">
                 <option value=""><?php _e('Select type', 'cache_invalidator'); ?></option>
                 <option value="template" <?php selected($targetType, 'template'); ?>><?php _e('Template', 'cache_invalidator'); ?></option>
                 <option value="gutenberg" <?php selected($targetType, 'gutenberg'); ?>><?php _e('Gutenberg', 'cache_invalidator'); ?></option>
                 <option value="home" <?php selected($targetType, 'home'); ?>><?php _e('Home', 'cache_invalidator'); ?></option>
                 <option value="layout" <?php selected($targetType, 'layout'); ?>><?php _e('Layout', 'cache_invalidator'); ?></option>
             </select>
-            <input type="text" name="<?php echo $this->optionName; ?>[<?php echo $elementType?>][<?php echo esc_attr($elementIndex); ?>][targets][<?php echo esc_attr($targetIndex); ?>][value]" placeholder="<?php _e('Target Value', 'cache_invalidator'); ?>" value="<?php echo esc_attr($targetValue); ?>" <?php if (!in_array($targetType, ['template', 'gutenberg'])) echo 'style="display:none;"'; ?>>
+            <input type="text" name="<?php echo $this->optionName; ?>[<?php echo $elementType; ?>][<?php echo esc_attr($elementIndex); ?>][targets][<?php echo esc_attr($targetIndex); ?>][value]" placeholder="<?php _e('Target Value', 'cache_invalidator'); ?>" value="<?php echo esc_attr($targetValue); ?>" <?php if (!in_array($targetType, ['template', 'gutenberg'])) echo 'style="display:none;"'; ?>>
         </div>
         <?php
         return ob_get_clean();

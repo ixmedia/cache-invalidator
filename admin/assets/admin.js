@@ -33,11 +33,23 @@ document.addEventListener('DOMContentLoaded', function() {
             targetRepeaterContainer.appendChild(newItem);
         }
 
+        if (event.target.classList.contains('add-time-field')) {
+            const timeFieldRepeaterContainer = event.target.nextElementSibling;
+            const timeFieldTemplate = timeFieldRepeaterContainer.getAttribute('data-template');
+            const parentIndex = event.target.closest('.repeater-item').querySelector('select').name.match(/\[(\d+)\]/)[1];
+            const timeFieldIndex = timeFieldRepeaterContainer.querySelectorAll('.time-field-item').length;
+            const newItem = document.createElement('div');
+            newItem.innerHTML = timeFieldTemplate.replace(/__index__/g, parentIndex).replace(/__time_field_index__/g, timeFieldIndex);
+            timeFieldRepeaterContainer.appendChild(newItem);
+        }
+
         if (event.target.classList.contains('delete')) {
             if (event.target.closest('.repeater-item')) {
                 removeRepeaterItem(event.target);
             } else if (event.target.closest('.target-item')) {
                 removeTarget(event.target);
+            } else if (event.target.closest('.time-field-item')) {
+                removeTimeField(event.target);
             }
         }
     });
@@ -54,6 +66,11 @@ function removeRepeaterItem(button) {
 
 function removeTarget(button) {
   const item = button.closest('.target-item');
+  item.parentNode.removeChild(item);
+}
+
+function removeTimeField(button) {
+  const item = button.closest('.time-field-item');
   item.parentNode.removeChild(item);
 }
 
