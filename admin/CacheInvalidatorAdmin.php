@@ -1,8 +1,17 @@
 <?php
 class CacheInvalidatorAdmin {
     private $optionName = 'cache_invalidator_options';
+    private $optionFilePath;
 
     public function __construct() {
+        $themeDir = get_template_directory();
+        $this->optionFilePath = $themeDir . '/cache-invalidator/config.json';
+
+        // Assurez-vous que le dossier existe
+        if (!file_exists($themeDir . '/cache-invalidator')) {
+            mkdir($themeDir . '/cache-invalidator');
+        }
+
         add_action('admin_menu', [$this, 'addAdminMenu']);
         add_action('admin_init', [$this, 'settingsInit']);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAdminScripts']);
@@ -51,7 +60,7 @@ class CacheInvalidatorAdmin {
      * Register settings and add settings sections and fields
      */
     public function settingsInit() {
-        register_setting($this->optionName, $this->optionName);
+        register_setting($this->optionName, $this->optionName, ['sanitize_callback' => [$this, 'saveOptionsToFile']]);
 
         // Section for postType triggers
         add_settings_section(
@@ -87,6 +96,25 @@ class CacheInvalidatorAdmin {
     }
 
     /**
+     * Save options to file
+     */
+    public function saveOptionsToFile($options) {
+        file_put_contents($this->optionFilePath, json_encode($options));
+        return $options;
+    }
+
+    /**
+     * Get options from file
+     */
+    public function getOptions() {
+        if (file_exists($this->optionFilePath)) {
+            $json = file_get_contents($this->optionFilePath);
+            return json_decode($json, true);
+        }
+        return [];
+    }
+
+    /**
      * Callback for the post type section
      */
     public function postTypeSectionCallback() {
@@ -101,7 +129,7 @@ class CacheInvalidatorAdmin {
         $post_types = get_post_types([], 'objects');
 
         // Get the saved options
-        $options = get_option($this->optionName);
+        $options = $this->getOptions();
         $postTypeTriggers = isset($options['postType']) ? $options['postType'] : [];
         ?>
         <div id="postTypeTriggersRepeater" data-template="<?php echo htmlspecialchars($this->getPostTypeTriggerHtml('__index__', null, $post_types)); ?>">
@@ -128,7 +156,7 @@ class CacheInvalidatorAdmin {
         $taxonomies = get_taxonomies([], 'objects');
 
         // Get the saved options
-        $options = get_option($this->optionName);
+        $options = $this->getOptions();
         $taxonomyTriggers = isset($options['taxonomy']) ? $options['taxonomy'] : [];
         ?>
         <div id="taxonomyTriggersRepeater" data-template="<?php echo htmlspecialchars($this->getTaxonomyTriggerHtml('__index__', null, $taxonomies)); ?>">
