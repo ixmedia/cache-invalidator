@@ -1,57 +1,78 @@
 document.addEventListener('DOMContentLoaded', function() {
-  setupRepeater(
-      'postTypeTriggersRepeater',
-      'addPostTypeTrigger'
-  );
-  setupRepeater(
-      'taxonomyTriggersRepeater',
-      'addTaxonomyTrigger'
-  );
+  const postTypeRepeaterContainer = document.getElementById('postTypeTriggersRepeater');
+  const addPostTypeTriggerButton = document.getElementById('addPostTypeTrigger');
+  const postTypeTemplate = postTypeRepeaterContainer.getAttribute('data-template');
 
-  function setupRepeater(containerId, buttonId) {
-      const repeaterContainer = document.getElementById(containerId);
-      const addButton = document.getElementById(buttonId);
-      const template = repeaterContainer.getAttribute('data-template');
+  addPostTypeTriggerButton.addEventListener('click', function() {
+      const index = postTypeRepeaterContainer.querySelectorAll('.repeater-item').length;
+      const newItem = document.createElement('div');
+      newItem.innerHTML = postTypeTemplate.replace(/__index__/g, index);
+      postTypeRepeaterContainer.appendChild(newItem);
+  });
 
-      addButton.addEventListener('click', function() {
-          const index = repeaterContainer.querySelectorAll('.repeater-item').length;
-          const newItem = document.createElement('div');
-          newItem.innerHTML = template.replace(/__index__/g, index);
-          repeaterContainer.appendChild(newItem);
-      });
+  const taxonomyRepeaterContainer = document.getElementById('taxonomyTriggersRepeater');
+  const addTaxonomyTriggerButton = document.getElementById('addTaxonomyTrigger');
+  const taxonomyTemplate = taxonomyRepeaterContainer.getAttribute('data-template');
 
-      addEventListenerToRepeater(repeaterContainer);
-  }
+  addTaxonomyTriggerButton.addEventListener('click', function() {
+      const index = taxonomyRepeaterContainer.querySelectorAll('.repeater-item').length;
+      const newItem = document.createElement('div');
+      newItem.innerHTML = taxonomyTemplate.replace(/__index__/g, index);
+      taxonomyRepeaterContainer.appendChild(newItem);
+  });
 
   function addEventListenerToRepeater(container) {
-      container.addEventListener('click', function(event) {
-          if (event.target.classList.contains('add-target')) {
-              addItem(event, '.target-item', 'data-template', '__target_index__', 'target');
-          } else if (event.target.classList.contains('add-time-field')) {
-              addItem(event, '.time-field-item', 'data-template', '__time_field_index__', 'time-field');
-          } else if (event.target.classList.contains('delete')) {
-              removeItem(event.target);
-          }
-      });
+    container.addEventListener('click', function(event) {
+        if (event.target.classList.contains('add-target')) {
+            const targetRepeaterContainer = event.target.nextElementSibling;
+            const targetTemplate = targetRepeaterContainer.getAttribute('data-template');
+            const parentIndex = event.target.closest('.repeater-item').querySelector('select').name.match(/\[(\d+)\]/)[1];
+            const targetIndex = targetRepeaterContainer.querySelectorAll('.target-item').length;
+            const newItem = document.createElement('div');
+            newItem.innerHTML = targetTemplate.replace(/__index__/g, parentIndex).replace(/__target_index__/g, targetIndex);
+            targetRepeaterContainer.appendChild(newItem);
+        }
+
+        if (event.target.classList.contains('add-time-field')) {
+            const timeFieldRepeaterContainer = event.target.nextElementSibling;
+            const timeFieldTemplate = timeFieldRepeaterContainer.getAttribute('data-template');
+            const parentIndex = event.target.closest('.repeater-item').querySelector('select').name.match(/\[(\d+)\]/)[1];
+            const timeFieldIndex = timeFieldRepeaterContainer.querySelectorAll('.time-field-item').length;
+            const newItem = document.createElement('div');
+            newItem.innerHTML = timeFieldTemplate.replace(/__index__/g, parentIndex).replace(/__time_field_index__/g, timeFieldIndex);
+            timeFieldRepeaterContainer.appendChild(newItem);
+        }
+
+        if (event.target.classList.contains('delete')) {
+            if (event.target.closest('.repeater-item')) {
+                removeRepeaterItem(event.target);
+            } else if (event.target.closest('.target-item')) {
+                removeTarget(event.target);
+            } else if (event.target.closest('.time-field-item')) {
+                removeTimeField(event.target);
+            }
+        }
+    });
   }
 
-  function addItem(event, itemClass, templateAttr, indexPlaceholder, type) {
-      const repeaterContainer = event.target.nextElementSibling;
-      const template = repeaterContainer.getAttribute(templateAttr);
-      const parentIndex = event.target.closest('.repeater-item').querySelector('select').name.match(/\[(\d+)\]/)[1];
-      const index = repeaterContainer.querySelectorAll(itemClass).length;
-      const newItem = document.createElement('div');
-      newItem.innerHTML = template.replace(/__index__/g, parentIndex).replace(new RegExp(indexPlaceholder, 'g'), index);
-      repeaterContainer.appendChild(newItem);
-  }
-
-  function removeItem(button) {
-      const item = button.closest('.repeater-item, .target-item, .time-field-item');
-      if (item) {
-          item.parentNode.removeChild(item);
-      }
-  }
+  addEventListenerToRepeater(postTypeRepeaterContainer);
+  addEventListenerToRepeater(taxonomyRepeaterContainer);
 });
+
+function removeRepeaterItem(button) {
+  const item = button.closest('.repeater-item');
+  item.parentNode.removeChild(item);
+}
+
+function removeTarget(button) {
+  const item = button.closest('.target-item');
+  item.parentNode.removeChild(item);
+}
+
+function removeTimeField(button) {
+  const item = button.closest('.time-field-item');
+  item.parentNode.removeChild(item);
+}
 
 // Toggle the visibility of the Target Value input field based on the selected target type
 function toggleTargetValueInput(selectElement) {
