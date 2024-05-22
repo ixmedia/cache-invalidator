@@ -12,11 +12,11 @@ require_once __DIR__ . '/CacheInvalidator.php';
 function initialize_cache_invalidator() {
   global $cacheInvalidator;
 
-  $config = require __DIR__ . '/config.php';
+  $config = get_option('cache_invalidator_options');
 
-  // error_log(json_encode($config), JSON_PRETTY_PRINT);
-  error_log(json_encode(get_option('cache_invalidator_options')), JSON_PRETTY_PRINT);
-  error_log(json_encode($config), JSON_PRETTY_PRINT);
+  if (empty($config)) {
+    $config = require __DIR__ . '/config.php';
+  }
 
   $configParser = new PhpFileConfigParser($config);
   $cacheInvalidator = new CacheInvalidator($configParser);

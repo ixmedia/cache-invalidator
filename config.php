@@ -80,21 +80,4 @@
  * ];
  */
 
- return [
-    'postType' => [
-        [
-            'type' => 'team',
-            'targets' => [
-                ['type' => 'gutenberg', 'value' => 'ix/block-team'],
-            ]
-        ]
-    ],
-    'taxonomy' => [
-        [
-            'type' => 'category',
-            'targets' => [
-                ['type' => 'template', 'value' => 'template-category.php'],
-            ]
-        ]
-    ]
-];
+ return [];

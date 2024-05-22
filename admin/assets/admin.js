@@ -10,28 +10,44 @@ document.addEventListener('DOMContentLoaded', function() {
       postTypeRepeaterContainer.appendChild(newItem);
   });
 
-  postTypeRepeaterContainer.addEventListener('click', function(event) {
-      if (event.target.classList.contains('add-target')) {
-          const targetRepeaterContainer = event.target.nextElementSibling;
-          const targetTemplate = targetRepeaterContainer.getAttribute('data-template');
-          const postTypeIndex = event.target.closest('.repeater-item').querySelector('select').name.match(/\[(\d+)\]/)[1];
-          const targetIndex = targetRepeaterContainer.querySelectorAll('.target-item').length;
-          const newItem = document.createElement('div');
-          newItem.innerHTML = targetTemplate.replace(/__index__/g, postTypeIndex).replace(/__target_index__/g, targetIndex);
-          targetRepeaterContainer.appendChild(newItem);
-      }
+  const taxonomyRepeaterContainer = document.getElementById('taxonomyTriggersRepeater');
+  const addTaxonomyTriggerButton = document.getElementById('addTaxonomyTrigger');
+  const taxonomyTemplate = taxonomyRepeaterContainer.getAttribute('data-template');
 
-      if (event.target.classList.contains('delete')) {
-          if (event.target.closest('.repeater-item')) {
-              removePostTypeTrigger(event.target);
-          } else if (event.target.closest('.target-item')) {
-              removeTarget(event.target);
-          }
-      }
+  addTaxonomyTriggerButton.addEventListener('click', function() {
+      const index = taxonomyRepeaterContainer.querySelectorAll('.repeater-item').length;
+      const newItem = document.createElement('div');
+      newItem.innerHTML = taxonomyTemplate.replace(/__index__/g, index);
+      taxonomyRepeaterContainer.appendChild(newItem);
   });
+
+  function addEventListenerToRepeater(container) {
+    container.addEventListener('click', function(event) {
+        if (event.target.classList.contains('add-target')) {
+            const targetRepeaterContainer = event.target.nextElementSibling;
+            const targetTemplate = targetRepeaterContainer.getAttribute('data-template');
+            const parentIndex = event.target.closest('.repeater-item').querySelector('select').name.match(/\[(\d+)\]/)[1];
+            const targetIndex = targetRepeaterContainer.querySelectorAll('.target-item').length;
+            const newItem = document.createElement('div');
+            newItem.innerHTML = targetTemplate.replace(/__index__/g, parentIndex).replace(/__target_index__/g, targetIndex);
+            targetRepeaterContainer.appendChild(newItem);
+        }
+
+        if (event.target.classList.contains('delete')) {
+            if (event.target.closest('.repeater-item')) {
+                removeRepeaterItem(event.target);
+            } else if (event.target.closest('.target-item')) {
+                removeTarget(event.target);
+            }
+        }
+    });
+  }
+
+  addEventListenerToRepeater(postTypeRepeaterContainer);
+  addEventListenerToRepeater(taxonomyRepeaterContainer);
 });
 
-function removePostTypeTrigger(button) {
+function removeRepeaterItem(button) {
   const item = button.closest('.repeater-item');
   item.parentNode.removeChild(item);
 }
@@ -52,7 +68,7 @@ function toggleTargetValueInput(selectElement) {
   }
 }
 
-// Toggle the visibility of the target fields based on the selected post type
+// Toggle the visibility of the target fields based on the selected post type or taxonomy
 function toggleTargetFields(selectElement) {
   const targetRepeater = selectElement.closest('.repeater-item').querySelector('.target-repeater');
   if (selectElement.value === '') {
