@@ -132,11 +132,28 @@ class CacheInvalidator {
             return;
         }
 
+        // Vérifiez si c'est le meta key _edit_lock
+        if ($meta_key == '_edit_lock') {
+            return;
+        }
+
         foreach ($this->triggers as $trigger) {
             if ($trigger instanceof PostTypeTrigger && $trigger->matchesField($meta_key)) {
                 $trigger->queueForCheck($post_id);
             }
         }
+    }
+
+    public function onOptionAdd(string $option, $value): void {
+        $this->onOptionSave($option);
+    }
+
+    public function onOptionUpdate(string $option, $old_value, $value): void {
+        $this->onOptionSave($option);
+    }
+
+    public function onOptionDelete(string $option): void {
+        $this->onOptionSave($option);
     }
 
     /**
@@ -146,6 +163,9 @@ class CacheInvalidator {
         // Register WordPress hooks
         add_action('save_post', [$this, 'onPostSave']);
         add_action('delete_post', [$this, 'onPostSave']);
+        add_action('added_option', [$this, 'onOptionAdd'], 10, 2);
+        add_action('updated_option', [$this, 'onOptionUpdate'], 10, 3);
+        add_action('deleted_option', [$this, 'onOptionDelete']);
         add_action('created_term', [$this, 'onTermChange'], 10, 3);
         add_action('edited_term', [$this, 'onTermChange'], 10, 3);
         add_action('delete_term', [$this, 'onTermChange'], 10, 3);
@@ -176,5 +196,27 @@ class CacheInvalidator {
         // Include WordPress database upgrade file
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta($sql);
+    }
+
+    private function onOptionSave(string $option): void {
+        // Vérifiez si c'est une sauvegarde automatique pour éviter des boucles infinies
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+
+        // Skip options with unsupported names
+        if (strpos($option, 'options_') !== 0) {
+            return;
+        }
+
+        foreach ($this->triggers as $trigger) {
+            if ($trigger instanceof PostTypeTrigger) {
+                if ($trigger->getTriggerId() == 'acf-ui-options-page') {
+                    foreach ($trigger->getTargetsToInvalidate() as $target) {
+                        $target->invalidate();
+                    }
+                }
+            }
+        }
     }
 }

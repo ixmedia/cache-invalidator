@@ -180,14 +180,23 @@ class CacheInvalidatorAdmin {
         $typeValue = $settings['type'] ?? '';
         $targets = $settings['targets'] ?? [];
         $timeFields = $settings['timeFields'] ?? [];
+
+        $post_types_array = [];
+
+        // Reorder posts by their label
+        foreach ($post_types as $type) {
+            $post_types_array[$type->name] = $type->label;
+        }
+        collator_asort(collator_create('root'), $post_types_array);
+
         ob_start();
         ?>
         <div class="repeater-item">
             <select name="<?php echo $this->optionName; ?>[postType][<?php echo esc_attr($index); ?>][type]" onchange="toggleTargetFields(this)">
                 <option value=""><?php _e('Select post type', 'cache_invalidator'); ?></option>
-                <?php foreach ($post_types as $type): ?>
-                    <option value="<?php echo esc_attr($type->name); ?>" <?php selected($typeValue, $type->name); ?>>
-                        <?php echo esc_html($type->label); ?>
+                <?php foreach ($post_types_array as $typeName=>$typeLabel): ?>
+                    <option value="<?php echo esc_attr($typeName); ?>" <?php selected($typeValue, $typeName); ?>>
+                        <?php echo esc_html($typeLabel); ?>
                     </option>
                 <?php endforeach; ?>
             </select>
