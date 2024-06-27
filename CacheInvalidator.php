@@ -185,10 +185,10 @@ class CacheInvalidator {
 
         $charset_collate = $wpdb->get_charset_collate();
         $sql = "CREATE TABLE $table_name (
-            post_type VARCHAR(255) NOT NULL,
-            post_id BIGINT NOT NULL,
-            invalidation_date DATETIME NOT NULL,
-            created_at DATETIME NOT NULL,
+            post_type varchar(255) NOT NULL,
+            post_id bigint NOT NULL,
+            invalidation_date datetime NOT NULL,
+            created_at datetime NOT NULL,
             PRIMARY KEY (post_type, post_id, invalidation_date),
             INDEX idx_invalidation_date (invalidation_date)
         ) $charset_collate;";
