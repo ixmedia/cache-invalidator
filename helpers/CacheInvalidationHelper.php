@@ -21,12 +21,31 @@ class CacheInvalidationHelper {
 
         // Loop through each invalidation date
         foreach ($invalidationDates as $invalidationDate) {
+            $startDate = new DateTime($invalidationDate);
+            $endDate = new DateTime($invalidationDate);
+            $endDate = $endDate->setTime(23, 59, 59);
+
             // Insert the new entry
-            $wpdb->insert(
+            $result = $wpdb->insert(
                 $table,
                 [
                     'post_type' => $typeName,
-                    'invalidation_date' => $invalidationDate,
+                    'invalidation_date' => $startDate->format('Y-m-d H:i:s'),
+                    'created_at' => current_time('mysql'),
+                    'post_id' => $postId
+                ],
+                [
+                    '%s', // format for typeName
+                    '%s', // format for invalidationDate
+                    '%s', // format for createdAt
+                    '%d'  // format for postId
+                ]
+            );
+            $result = $wpdb->insert(
+                $table,
+                [
+                    'post_type' => $typeName,
+                    'invalidation_date' => $endDate->format('Y-m-d H:i:s'),
                     'created_at' => current_time('mysql'),
                     'post_id' => $postId
                 ],
