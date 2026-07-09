@@ -56,7 +56,7 @@ class CacheInvalidatorAdmin {
                         </h2>
                     </div>
                     <div class="cache-inv-card-body">
-                        <p class="cache-inv-section-desc"><?php _e('Configure triggers for specific post types.', 'cache_invalidator'); ?></p>
+                        <p class="cache-inv-section-desc"><?php _e('The cache of the chosen targets is cleared automatically whenever a content item of the matching type is created, modified, or deleted.', 'cache_invalidator'); ?></p>
                         <?php $this->postTypeTriggersRender(); ?>
                         <button type="button" id="addPostTypeTrigger" class="button button-primary"><?php _e('+ Add Trigger', 'cache_invalidator'); ?></button>
                     </div>
@@ -70,7 +70,7 @@ class CacheInvalidatorAdmin {
                         </h2>
                     </div>
                     <div class="cache-inv-card-body">
-                        <p class="cache-inv-section-desc"><?php _e('Configure triggers for specific taxonomies.', 'cache_invalidator'); ?></p>
+                        <p class="cache-inv-section-desc"><?php _e('The cache of the chosen targets is cleared automatically whenever a term of the matching taxonomy is created, modified, or deleted.', 'cache_invalidator'); ?></p>
                         <?php $this->taxonomyTriggersRender(); ?>
                         <button type="button" id="addTaxonomyTrigger" class="button button-primary"><?php _e('+ Add Trigger', 'cache_invalidator'); ?></button>
                     </div>
@@ -80,6 +80,49 @@ class CacheInvalidatorAdmin {
             </form>
         </div>
         <?php
+    }
+
+    /**
+     * Output a question-mark help icon revealing $html in a tooltip on hover/focus.
+     *
+     * WordPress core has no generic tooltip component, so this is a small
+     * dependency-free CSS tooltip (see admin.css).
+     *
+     * @param string $html Ready-to-print HTML shown inside the tooltip.
+     */
+    private function helpTip(string $html) {
+        ?>
+        <span class="cache-inv-help-tip" tabindex="0" role="note" aria-label="<?php echo esc_attr__('Help', 'cache_invalidator'); ?>">
+            <span class="dashicons dashicons-editor-help"></span>
+            <span class="cache-inv-tip-content"><?php echo $html; ?></span>
+        </span>
+        <?php
+    }
+
+    /**
+     * Build the legend describing each available target type (used inside a tooltip).
+     *
+     * The type labels reuse the same translations as the target dropdown so both
+     * stay in sync.
+     *
+     * @return string The legend HTML.
+     */
+    private function targetLegendHtml(): string {
+        $rows = [
+            [__('Template', 'cache_invalidator'), sprintf(__('pages that use a specific template. Value: the file name (e.g. %s).', 'cache_invalidator'), '<code>template-events.php</code>')],
+            [__('Gutenberg', 'cache_invalidator'), sprintf(__('pages/posts that contain a specific block. Value: the block name (e.g. %s).', 'cache_invalidator'), '<code>ix/block-event</code>')],
+            [__('Home', 'cache_invalidator'), __('the home page, in every language.', 'cache_invalidator')],
+            [__('Layout', 'cache_invalidator'), __('the entire site (header, footer, menu…).', 'cache_invalidator')],
+            [__('Archive', 'cache_invalidator'), sprintf(__('the archive page of a post type. Value: the post type slug (e.g. %s).', 'cache_invalidator'), '<code>event</code>')],
+        ];
+
+        $html = '<ul>';
+        foreach ($rows as $row) {
+            $html .= '<li><strong>' . $row[0] . '</strong> — ' . $row[1] . '</li>';
+        }
+        $html .= '</ul>';
+
+        return $html;
     }
 
     /**
@@ -230,6 +273,7 @@ class CacheInvalidatorAdmin {
                     <div class="cache-inv-subsection-title">
                         <span class="dashicons dashicons-location"></span>
                         <?php _e('Targets', 'cache_invalidator'); ?>
+                        <?php $this->helpTip($this->targetLegendHtml()); ?>
                     </div>
                     <div class="target-items" data-template="<?php echo htmlspecialchars($this->getTargetHtml($index, 'postType', '__target_index__')); ?>">
                         <?php foreach ($targets as $targetIndex => $target): ?>
@@ -243,6 +287,7 @@ class CacheInvalidatorAdmin {
                     <div class="cache-inv-subsection-title">
                         <span class="dashicons dashicons-clock"></span>
                         <?php _e('Time Fields', 'cache_invalidator'); ?>
+                        <?php $this->helpTip(sprintf(__('The name of an ACF field that contains a date (e.g. %s).', 'cache_invalidator'), '<code>start_date</code>')); ?>
                     </div>
                     <div class="time-fields-items" data-template="<?php echo htmlspecialchars($this->getTimeFieldHtml($index, '__time_field_index__')); ?>">
                         <?php foreach ($timeFields as $timeFieldIndex => $timeField): ?>
@@ -291,6 +336,7 @@ class CacheInvalidatorAdmin {
                     <div class="cache-inv-subsection-title">
                         <span class="dashicons dashicons-location"></span>
                         <?php _e('Targets', 'cache_invalidator'); ?>
+                        <?php $this->helpTip($this->targetLegendHtml()); ?>
                     </div>
                     <div class="target-items" data-template="<?php echo htmlspecialchars($this->getTargetHtml($index, 'taxonomy', '__target_index__')); ?>">
                         <?php foreach ($targets as $targetIndex => $target): ?>

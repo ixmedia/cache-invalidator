@@ -9,6 +9,92 @@
   margin-bottom: 16px;
 }
 
+/* Help tooltip (question-mark icon) */
+.cache-inv-help-tip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: help;
+  color: #2271b1;
+  outline: none;
+}
+
+.cache-inv-help-tip .dashicons {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.cache-inv-help-tip:hover .dashicons,
+.cache-inv-help-tip:focus .dashicons {
+  color: #135e96;
+}
+
+.cache-inv-tip-content {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 100;
+  width: 340px;
+  max-width: 80vw;
+  padding: 10px 12px;
+  background: #1d2327;
+  color: #f0f0f1;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.55;
+  text-transform: none;
+  letter-spacing: normal;
+  white-space: normal;
+}
+
+.cache-inv-help-tip:hover .cache-inv-tip-content,
+.cache-inv-help-tip:focus .cache-inv-tip-content,
+.cache-inv-help-tip:focus-within .cache-inv-tip-content {
+  display: block;
+}
+
+/* Small arrow pointing up to the icon */
+.cache-inv-tip-content::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 6px;
+  border: 6px solid transparent;
+  border-bottom-color: #1d2327;
+}
+
+.cache-inv-tip-title {
+  margin: 0 0 6px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.cache-inv-tip-content ul {
+  margin: 0;
+  padding-left: 16px;
+  list-style: disc;
+}
+
+.cache-inv-tip-content li {
+  margin-bottom: 4px;
+}
+
+.cache-inv-tip-content li:last-child {
+  margin-bottom: 0;
+}
+
+.cache-inv-tip-content code {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  padding: 0 4px;
+  font-size: 11px;
+  color: #fff;
+}
+
 /* Cards */
 .cache-inv-card {
   background: #fff;

@@ -1,3 +1,11 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: cache_invalidator\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: fr_FR\n"
+
 msgid "Cache Invalidation Settings"
 msgstr "Paramètres de l'invalidation de cache"
 
@@ -96,3 +104,33 @@ msgstr "Sélectionner une taxonomie…"
 
 msgid "Remove trigger"
 msgstr "Supprimer le déclencheur"
+
+msgid "Archive"
+msgstr "Archive"
+
+msgid "Help"
+msgstr "Aide"
+
+msgid "The cache of the chosen targets is cleared automatically whenever a content item of the matching type is created, modified, or deleted."
+msgstr "La cache des cibles choisies est vidée automatiquement chaque fois qu'un contenu du type correspondant est créé, modifié ou supprimé."
+
+msgid "The cache of the chosen targets is cleared automatically whenever a term of the matching taxonomy is created, modified, or deleted."
+msgstr "La cache des cibles choisies est vidée automatiquement chaque fois qu'un terme de la taxonomie correspondante est créé, modifié ou supprimé."
+
+msgid "pages that use a specific template. Value: the file name (e.g. %s)."
+msgstr "pages qui utilisent un gabarit précis. Valeur : le nom du fichier (ex. %s)."
+
+msgid "pages/posts that contain a specific block. Value: the block name (e.g. %s)."
+msgstr "pages/posts contenant un bloc précis. Valeur : le nom du bloc (ex. %s)."
+
+msgid "the home page, in every language."
+msgstr "la page d'accueil dans toutes les langues."
+
+msgid "the entire site (header, footer, menu…)."
+msgstr "tout le site (entête, pied de page, menu…)."
+
+msgid "the archive page of a post type. Value: the post type slug (e.g. %s)."
+msgstr "la page d'archive d'un type de post. Valeur : le slug du type de post (ex. %s)."
+
+msgid "The name of an ACF field that contains a date (e.g. %s)."
+msgstr "Le nom d'un champ ACF contenant une date (ex. %s)."
