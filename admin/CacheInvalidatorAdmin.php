@@ -43,14 +43,40 @@ class CacheInvalidatorAdmin {
      */
     public function optionsPage() {
         ?>
-        <div class="wrap">
+        <div class="wrap cache-inv-wrap">
             <h1><?php _e('Cache Invalidation Settings', 'cache_invalidator'); ?></h1>
             <form action="options.php" method="post">
-                <?php
-                settings_fields($this->optionName);
-                do_settings_sections('cache_invalidator');
-                submit_button();
-                ?>
+                <?php settings_fields($this->optionName); ?>
+
+                <div class="cache-inv-card">
+                    <div class="cache-inv-card-header">
+                        <h2>
+                            <span class="dashicons dashicons-admin-post"></span>
+                            <?php _e('Post Type Triggers', 'cache_invalidator'); ?>
+                        </h2>
+                    </div>
+                    <div class="cache-inv-card-body">
+                        <p class="cache-inv-section-desc"><?php _e('Configure triggers for specific post types.', 'cache_invalidator'); ?></p>
+                        <?php $this->postTypeTriggersRender(); ?>
+                        <button type="button" id="addPostTypeTrigger" class="button button-primary"><?php _e('+ Add Trigger', 'cache_invalidator'); ?></button>
+                    </div>
+                </div>
+
+                <div class="cache-inv-card">
+                    <div class="cache-inv-card-header">
+                        <h2>
+                            <span class="dashicons dashicons-tag"></span>
+                            <?php _e('Taxonomy Triggers', 'cache_invalidator'); ?>
+                        </h2>
+                    </div>
+                    <div class="cache-inv-card-body">
+                        <p class="cache-inv-section-desc"><?php _e('Configure triggers for specific taxonomies.', 'cache_invalidator'); ?></p>
+                        <?php $this->taxonomyTriggersRender(); ?>
+                        <button type="button" id="addTaxonomyTrigger" class="button button-primary"><?php _e('+ Add Trigger', 'cache_invalidator'); ?></button>
+                    </div>
+                </div>
+
+                <?php submit_button(); ?>
             </form>
         </div>
         <?php
@@ -125,15 +151,11 @@ class CacheInvalidatorAdmin {
      * Render the post type triggers field
      */
     public function postTypeTriggersRender() {
-        // Get all registered post types
-        $post_types = get_post_types([], 'objects');
-
-        // Get the saved options
+        $post_types = get_post_types(['public' => true], 'objects');
         $options = $this->getOptions();
         $postTypeTriggers = isset($options['postType']) ? $options['postType'] : [];
         ?>
         <div id="postTypeTriggersRepeater" data-template="<?php echo htmlspecialchars($this->getPostTypeTriggerHtml('__index__', null, $post_types)); ?>">
-            <button type="button" id="addPostTypeTrigger" class="button button-primary"><?php _e('Add Post Type Trigger', 'cache_invalidator'); ?></button>
             <?php foreach ($postTypeTriggers as $index => $settings): ?>
                 <?php echo $this->getPostTypeTriggerHtml($index, $settings, $post_types); ?>
             <?php endforeach; ?>
@@ -152,15 +174,11 @@ class CacheInvalidatorAdmin {
      * Render the taxonomy triggers field
      */
     public function taxonomyTriggersRender() {
-        // Get all registered taxonomies
-        $taxonomies = get_taxonomies([], 'objects');
-
-        // Get the saved options
+        $taxonomies = get_taxonomies(['public' => true], 'objects');
         $options = $this->getOptions();
         $taxonomyTriggers = isset($options['taxonomy']) ? $options['taxonomy'] : [];
         ?>
         <div id="taxonomyTriggersRepeater" data-template="<?php echo htmlspecialchars($this->getTaxonomyTriggerHtml('__index__', null, $taxonomies)); ?>">
-            <button type="button" id="addTaxonomyTrigger" class="button button-primary"><?php _e('Add Taxonomy Trigger', 'cache_invalidator'); ?></button>
             <?php foreach ($taxonomyTriggers as $index => $settings): ?>
                 <?php echo $this->getTaxonomyTriggerHtml($index, $settings, $taxonomies); ?>
             <?php endforeach; ?>
@@ -192,33 +210,48 @@ class CacheInvalidatorAdmin {
         ob_start();
         ?>
         <div class="repeater-item">
-            <select name="<?php echo $this->optionName; ?>[postType][<?php echo esc_attr($index); ?>][type]" onchange="toggleTargetFields(this)">
-                <option value=""><?php _e('Select post type', 'cache_invalidator'); ?></option>
-                <?php foreach ($post_types_array as $typeName=>$typeLabel): ?>
-                    <option value="<?php echo esc_attr($typeName); ?>" <?php selected($typeValue, $typeName); ?>>
-                        <?php echo esc_html($typeLabel); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-
-            <div class="target-repeater" style="<?php echo empty($typeValue) ? 'display:none;' : ''; ?>">
-                <button type="button" class="button add-target"><?php _e('Add Target', 'cache_invalidator'); ?></button>
-                <div class="target-items" data-template="<?php echo htmlspecialchars($this->getTargetHtml($index, 'postType', '__target_index__')); ?>">
-                    <?php foreach ($targets as $targetIndex => $target): ?>
-                        <?php echo $this->getTargetHtml($index, 'postType', $targetIndex, $target); ?>
+            <div class="repeater-item-header">
+                <span class="dashicons dashicons-admin-post"></span>
+                <select name="<?php echo $this->optionName; ?>[postType][<?php echo esc_attr($index); ?>][type]" onchange="toggleTargetFields(this)">
+                    <option value=""><?php _e('Select post type', 'cache_invalidator'); ?></option>
+                    <?php foreach ($post_types_array as $typeName => $typeLabel): ?>
+                        <option value="<?php echo esc_attr($typeName); ?>" <?php selected($typeValue, $typeName); ?>>
+                            <?php echo esc_html($typeLabel); ?>
+                        </option>
                     <?php endforeach; ?>
+                </select>
+                <button type="button" class="repeater-delete delete" aria-label="<?php _e('Remove trigger', 'cache_invalidator'); ?>">
+                    <span class="dashicons dashicons-trash"></span>
+                </button>
+            </div>
+            <div class="repeater-item-body">
+
+                <div class="target-repeater" style="<?php echo empty($typeValue) ? 'display:none;' : ''; ?>">
+                    <div class="cache-inv-subsection-title">
+                        <span class="dashicons dashicons-location"></span>
+                        <?php _e('Targets', 'cache_invalidator'); ?>
+                    </div>
+                    <div class="target-items" data-template="<?php echo htmlspecialchars($this->getTargetHtml($index, 'postType', '__target_index__')); ?>">
+                        <?php foreach ($targets as $targetIndex => $target): ?>
+                            <?php echo $this->getTargetHtml($index, 'postType', $targetIndex, $target); ?>
+                        <?php endforeach; ?>
+                    </div>
+                    <button type="button" class="button button-small add-target"><?php _e('+ Add Target', 'cache_invalidator'); ?></button>
+                </div>
+
+                <div class="time-fields-repeater" style="<?php echo empty($typeValue) ? 'display:none;' : ''; ?>">
+                    <div class="cache-inv-subsection-title">
+                        <span class="dashicons dashicons-clock"></span>
+                        <?php _e('Time Fields', 'cache_invalidator'); ?>
+                    </div>
+                    <div class="time-fields-items" data-template="<?php echo htmlspecialchars($this->getTimeFieldHtml($index, '__time_field_index__')); ?>">
+                        <?php foreach ($timeFields as $timeFieldIndex => $timeField): ?>
+                            <?php echo $this->getTimeFieldHtml($index, $timeFieldIndex, $timeField); ?>
+                        <?php endforeach; ?>
+                    </div>
+                    <button type="button" class="button button-small add-time-field"><?php _e('+ Add Time Field', 'cache_invalidator'); ?></button>
                 </div>
             </div>
-            <div class="time-fields-repeater">
-                <button type="button" class="button add-time-field"><?php _e('Add Time Field', 'cache_invalidator'); ?></button>
-                <div class="time-fields-items" data-template="<?php echo htmlspecialchars($this->getTimeFieldHtml($index, '__time_field_index__')); ?>">
-                    <?php foreach ($timeFields as $timeFieldIndex => $timeField): ?>
-                        <?php echo $this->getTimeFieldHtml($index, $timeFieldIndex, $timeField); ?>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-
-            <button type="button" class="button-link delete" onclick="removePostTypeTrigger(this)"><?php _e('Remove Post Type Trigger', 'cache_invalidator'); ?></button>
         </div>
         <?php
         return ob_get_clean();
@@ -238,23 +271,35 @@ class CacheInvalidatorAdmin {
         ob_start();
         ?>
         <div class="repeater-item">
-            <select name="<?php echo $this->optionName; ?>[taxonomy][<?php echo esc_attr($index); ?>][type]" onchange="toggleTargetFields(this)">
-                <option value=""><?php _e('Select taxonomy', 'cache_invalidator'); ?></option>
-                <?php foreach ($taxonomies as $taxonomy): ?>
-                    <option value="<?php echo esc_attr($taxonomy->name); ?>" <?php selected($typeValue, $taxonomy->name); ?>>
-                        <?php echo esc_html($taxonomy->label); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-            <div class="target-repeater" style="<?php echo empty($typeValue) ? 'display:none;' : ''; ?>">
-                <button type="button" class="button add-target"><?php _e('Add Target', 'cache_invalidator'); ?></button>
-                <div class="target-items" data-template="<?php echo htmlspecialchars($this->getTargetHtml($index, 'taxonomy', '__target_index__')); ?>">
-                    <?php foreach ($targets as $targetIndex => $target): ?>
-                        <?php echo $this->getTargetHtml($index, 'taxonomy', $targetIndex, $target); ?>
+            <div class="repeater-item-header">
+                <span class="dashicons dashicons-tag"></span>
+                <select name="<?php echo $this->optionName; ?>[taxonomy][<?php echo esc_attr($index); ?>][type]" onchange="toggleTargetFields(this)">
+                    <option value=""><?php _e('Select taxonomy', 'cache_invalidator'); ?></option>
+                    <?php foreach ($taxonomies as $taxonomy): ?>
+                        <option value="<?php echo esc_attr($taxonomy->name); ?>" <?php selected($typeValue, $taxonomy->name); ?>>
+                            <?php echo esc_html($taxonomy->label); ?>
+                        </option>
                     <?php endforeach; ?>
+                </select>
+                <button type="button" class="repeater-delete delete" aria-label="<?php _e('Remove trigger', 'cache_invalidator'); ?>">
+                    <span class="dashicons dashicons-trash"></span>
+                </button>
+            </div>
+            <div class="repeater-item-body">
+
+                <div class="target-repeater" style="<?php echo empty($typeValue) ? 'display:none;' : ''; ?>">
+                    <div class="cache-inv-subsection-title">
+                        <span class="dashicons dashicons-location"></span>
+                        <?php _e('Targets', 'cache_invalidator'); ?>
+                    </div>
+                    <div class="target-items" data-template="<?php echo htmlspecialchars($this->getTargetHtml($index, 'taxonomy', '__target_index__')); ?>">
+                        <?php foreach ($targets as $targetIndex => $target): ?>
+                            <?php echo $this->getTargetHtml($index, 'taxonomy', $targetIndex, $target); ?>
+                        <?php endforeach; ?>
+                    </div>
+                    <button type="button" class="button button-small add-target"><?php _e('+ Add Target', 'cache_invalidator'); ?></button>
                 </div>
             </div>
-            <button type="button" class="button-link delete" onclick="removeTaxonomyTrigger(this)"><?php _e('Remove Taxonomy Trigger', 'cache_invalidator'); ?></button>
         </div>
         <?php
         return ob_get_clean();
@@ -272,8 +317,10 @@ class CacheInvalidatorAdmin {
         ob_start();
         ?>
         <div class="time-field-item">
-            <button type="button" class="remove-icon" onclick="removeTimeField(this)" aria-label="<?php _e('Remove Time Field', 'cache_invalidator'); ?>">&times;</button>
             <input type="text" name="<?php echo $this->optionName; ?>[postType][<?php echo esc_attr($postTypeIndex); ?>][timeFields][<?php echo esc_attr($timeFieldIndex); ?>]" placeholder="<?php _e('Time Field', 'cache_invalidator'); ?>" value="<?php echo esc_attr($timeField); ?>">
+            <button type="button" class="remove-icon" onclick="removeTimeField(this)" aria-label="<?php _e('Remove Time Field', 'cache_invalidator'); ?>">
+                <span class="dashicons dashicons-no-alt"></span>
+            </button>
         </div>
         <?php
         return ob_get_clean();
@@ -293,15 +340,18 @@ class CacheInvalidatorAdmin {
         ob_start();
         ?>
         <div class="target-item">
-            <button type="button" class="remove-icon" onclick="removeTarget(this)" aria-label="<?php _e('Remove Target', 'cache_invalidator'); ?>">&times;</button>
             <select name="<?php echo $this->optionName; ?>[<?php echo $elementType; ?>][<?php echo esc_attr($elementIndex); ?>][targets][<?php echo esc_attr($targetIndex); ?>][type]" onchange="toggleTargetValueInput(this)">
                 <option value=""><?php _e('Select type', 'cache_invalidator'); ?></option>
                 <option value="template" <?php selected($targetType, 'template'); ?>><?php _e('Template', 'cache_invalidator'); ?></option>
                 <option value="gutenberg" <?php selected($targetType, 'gutenberg'); ?>><?php _e('Gutenberg', 'cache_invalidator'); ?></option>
                 <option value="home" <?php selected($targetType, 'home'); ?>><?php _e('Home', 'cache_invalidator'); ?></option>
                 <option value="layout" <?php selected($targetType, 'layout'); ?>><?php _e('Layout', 'cache_invalidator'); ?></option>
+                <option value="archive" <?php selected($targetType, 'archive'); ?>><?php _e('Archive', 'cache_invalidator'); ?></option>
             </select>
-            <input type="text" name="<?php echo $this->optionName; ?>[<?php echo $elementType; ?>][<?php echo esc_attr($elementIndex); ?>][targets][<?php echo esc_attr($targetIndex); ?>][value]" placeholder="<?php _e('Target Value', 'cache_invalidator'); ?>" value="<?php echo esc_attr($targetValue); ?>" <?php if (!in_array($targetType, ['template', 'gutenberg'])) echo 'style="display:none;"'; ?>>
+            <input type="text" name="<?php echo $this->optionName; ?>[<?php echo $elementType; ?>][<?php echo esc_attr($elementIndex); ?>][targets][<?php echo esc_attr($targetIndex); ?>][value]" placeholder="<?php _e('Target Value', 'cache_invalidator'); ?>" value="<?php echo esc_attr($targetValue); ?>" <?php if (!in_array($targetType, ['template', 'gutenberg', 'archive'])) echo 'style="display:none;"'; ?>>
+            <button type="button" class="remove-icon" onclick="removeTarget(this)" aria-label="<?php _e('Remove Target', 'cache_invalidator'); ?>">
+                <span class="dashicons dashicons-no-alt"></span>
+            </button>
         </div>
         <?php
         return ob_get_clean();

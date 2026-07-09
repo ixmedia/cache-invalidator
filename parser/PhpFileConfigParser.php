@@ -8,6 +8,7 @@ require_once __DIR__ . '/../targets/TemplatePageTarget.php';
 require_once __DIR__ . '/../targets/GutenbergComponentTarget.php';
 require_once __DIR__ . '/../targets/HomePageTarget.php';
 require_once __DIR__ . '/../targets/LayoutTarget.php';
+require_once __DIR__ . '/../targets/ArchivePageTarget.php';
 require_once __DIR__ . '/../managers/W3TCManager.php';
 require_once __DIR__ . '/../managers/WPManager.php';
 
@@ -123,8 +124,10 @@ class PhpFileConfigParser implements CacheInvalidationConfigParser {
                 return new HomePageTarget($this->cacheManager);
             case 'layout':
                 return new LayoutTarget($this->cacheManager);
+            case 'archive':
+                return new ArchivePageTarget($value, $this->cacheManager);
             default:
-                trigger_error("Cache Invalidator: Invalid target type specified: '$type'. Allowed types are 'template', 'gutenberg', 'home', 'layout'.", E_USER_WARNING);
+                trigger_error("Cache Invalidator: Invalid target type specified: '$type'. Allowed types are 'template', 'gutenberg', 'home', 'layout', 'archive'.", E_USER_WARNING);
                 return null;
         }
     }

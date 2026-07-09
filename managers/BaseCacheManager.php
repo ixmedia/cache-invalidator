@@ -30,6 +30,20 @@ abstract class BaseCacheManager implements CacheManager {
   }
 
   /**
+   * Invalidates cache for a specific front-end URL.
+   * @param string $url The URL to invalidate.
+   * @return void
+   */
+  public function invalidateUrl(string $url): void {
+      $flushUrlFunction = $this->getFlushUrlFunction();
+      if ($flushUrlFunction === null) {
+          $this->log("URL-based invalidation not supported by this cache manager.");
+          return;
+      }
+      $this->executeCacheFunction($flushUrlFunction, "URL flushed: " . $url, $url);
+  }
+
+  /**
    * Executes the cache function.
    * @param string $function The cache function to execute.
    * @param string $successMessage The success message to log.
@@ -62,6 +76,14 @@ abstract class BaseCacheManager implements CacheManager {
    * @return string
    */
   abstract protected function getClearAllCacheFunction(): string;
+
+  /**
+   * Gets the cache function to flush a specific URL.
+   * Returns null when the cache manager cannot invalidate by URL.
+   * Needs to be implemented by subclasses.
+   * @return string|null
+   */
+  abstract protected function getFlushUrlFunction(): ?string;
 
   /**
    * Logs a message using trigger_error.

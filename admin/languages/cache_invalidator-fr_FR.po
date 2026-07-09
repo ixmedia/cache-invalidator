@@ -19,6 +19,9 @@ msgstr "Type de post"
 msgid "Time Fields"
 msgstr "Champs de temps"
 
+msgid "Time Field"
+msgstr "Champ de temps"
+
 msgid "Add Time Field"
 msgstr "Ajouter un champ de temps"
 
@@ -75,3 +78,21 @@ msgstr "Disposition"
 
 msgid "Target Value"
 msgstr "Valeur de la cible"
+
+msgid "+ Add Trigger"
+msgstr "+ Ajouter un déclencheur"
+
+msgid "+ Add Target"
+msgstr "+ Ajouter une cible"
+
+msgid "+ Add Time Field"
+msgstr "+ Ajouter un champ de temps"
+
+msgid "Select a post type…"
+msgstr "Sélectionner un type de post…"
+
+msgid "Select a taxonomy…"
+msgstr "Sélectionner une taxonomie…"
+
+msgid "Remove trigger"
+msgstr "Supprimer le déclencheur"

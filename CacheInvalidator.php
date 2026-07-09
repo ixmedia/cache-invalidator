@@ -8,6 +8,7 @@ require_once __DIR__ . '/targets/TemplatePageTarget.php';
 require_once __DIR__ . '/targets/GutenbergComponentTarget.php';
 require_once __DIR__ . '/targets/HomePageTarget.php';
 require_once __DIR__ . '/targets/LayoutTarget.php';
+require_once __DIR__ . '/targets/ArchivePageTarget.php';
 require_once __DIR__ . '/managers/W3TCManager.php';
 require_once __DIR__ . '/managers/WPManager.php';
 

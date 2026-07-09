@@ -1,90 +1,222 @@
-.wrap .repeater-item {
+/* Cache Invalidator Admin */
+
+/* Page wrapper */
+.cache-inv-wrap {
+  max-width: 860px;
+}
+
+.cache-inv-wrap h1 {
+  margin-bottom: 16px;
+}
+
+/* Cards */
+.cache-inv-card {
   background: #fff;
-  border: 1px solid #ccd0d4;
-  padding: 15px;
-  margin-bottom: 15px;
+  border: 1px solid #dcdcde;
   border-radius: 4px;
+  margin-bottom: 20px;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
 }
 
-.wrap .repeater-item select,
-.wrap .repeater-item input[type="text"] {
-  flex-grow: 1;
-  margin-bottom: 10px;
+.cache-inv-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f1;
+  background: #f6f7f7;
+  border-radius: 4px 4px 0 0;
 }
 
-.wrap .repeater-item .add-target,
-.wrap .repeater-item .add-time-field {
-  margin-bottom: 10px;
+.cache-inv-card-header h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.wrap .repeater-item button {
-  margin-left: 5px;
+.cache-inv-card-header h2 .dashicons {
+  color: #646970;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
 }
 
-.wrap .repeater-item .time-field-item,
-.wrap .repeater-item .target-item {
-  background: #f7f7f7;
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #ccd0d4;
+.cache-inv-card-body {
+  padding: 16px;
+}
+
+.cache-inv-section-desc {
+  color: #646970;
+  font-size: 13px;
+  margin: 0 0 14px;
+}
+
+/* Repeater trigger cards */
+.repeater-item {
+  background: #fff;
+  border: 1px solid #dcdcde;
   border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.repeater-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: #f0f6fc;
+  border-bottom: 1px solid #c5d9ed;
+  border-radius: 4px 4px 0 0;
+}
+
+.repeater-item-header>.dashicons {
+  color: #2271b1;
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.repeater-item-header select {
+  flex: 1;
+  font-weight: 500;
+  font-size: 13px;
+  color: #1d2327;
+  max-width: 320px;
+}
+
+.repeater-delete {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 3px;
+  color: #8c8f94;
+  line-height: 1;
+  border-radius: 3px;
   display: flex;
   align-items: center;
 }
 
-.wrap .repeater-item .remove-icon {
-  background: none;
-  border: none;
+.repeater-delete:hover {
   color: #d63638;
-  font-size: 20px;
-  cursor: pointer;
-  margin-right: 10px;
-  line-height: 1;
+  background: #fcf0f1;
 }
 
-.wrap .repeater-item .time-field-item input[type="text"],
-.wrap .repeater-item .target-item select,
-.wrap .repeater-item .target-item input[type="text"] {
+.repeater-delete .dashicons {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.repeater-item-body {
+  padding: 14px;
+}
+
+/* Subsection labels */
+.cache-inv-subsection-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #646970;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-top: 14px;
+  margin-bottom: 8px;
+}
+
+.time-fields-repeater .cache-inv-subsection-title {
+  padding-top: 14px;
+  border-top: 1px solid #f0f0f1;
+}
+
+.cache-inv-subsection-title .dashicons {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  color: #8c8f94;
+}
+
+/* Add sub-item buttons */
+.add-target,
+.add-time-field {
+  display: block !important;
+  width: fit-content;
+  margin-top: 8px !important;
+  margin-left: auto !important;
+}
+
+/* Target / Time Field items */
+.target-item,
+.time-field-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #f6f7f7;
+  border: 1px solid #f0f0f1;
+  border-radius: 3px;
+  margin-bottom: 6px;
+}
+
+.target-item:last-child,
+.time-field-item:last-child {
   margin-bottom: 0;
 }
 
-.wrap .repeater-item .time-field-item input[type="text"] {
-  flex-grow: 1;
+.target-item select {
+  flex: 1;
+  max-width: 23rem;
 }
 
-.wrap .repeater-item .target-item select {
-  flex-grow: 1;
-  margin-right: 10px;
+.target-item input[type="text"] {
+  flex: 1;
+  max-width: 23rem;
 }
 
-.wrap .repeater-item .target-item input[type="text"] {
-  width: 200px;
+.time-field-item input[type="text"] {
+  flex: 1;
 }
 
-.button-link.delete {
-  color: #d63638;
-  border: 1px solid #d63638;
-  padding: 5px 10px;
-  text-decoration: none;
+/* Remove icon buttons (inside items) */
+.remove-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  color: #8c8f94;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-left: auto;
   border-radius: 3px;
-  display: inline-block;
-  margin-top: 10px;
-  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
 }
 
-.button-link.delete:hover {
-  background: #d63638;
-  color: #fff;
-  text-decoration: none;
+.remove-icon:hover {
+  color: #d63638;
+  background: #fcf0f1;
 }
 
-.wrap th {
-  padding: 0;
-  width: auto;
+.remove-icon .dashicons {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
 }
 
 #addPostTypeTrigger,
 #addTaxonomyTrigger {
-  margin-bottom: 15px;
+  display: block;
+  margin-left: auto;
+}
+
+/* Hide the WP settings table header cell */
+.wrap th {
+  padding: 0;
+  width: auto;
 }

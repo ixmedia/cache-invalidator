@@ -13,4 +13,8 @@ class W3TCManager extends BaseCacheManager {
     protected function getClearAllCacheFunction(): string {
         return 'w3tc_flush_all';
     }
+
+    protected function getFlushUrlFunction(): ?string {
+        return 'w3tc_flush_url';
+    }
 }

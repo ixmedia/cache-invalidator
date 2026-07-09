@@ -13,4 +13,9 @@ class WPManager extends BaseCacheManager {
     protected function getClearAllCacheFunction(): string {
         return 'wp_cache_flush';
     }
+
+    protected function getFlushUrlFunction(): ?string {
+        // The WP object cache is not addressable by URL.
+        return null;
+    }
 }
