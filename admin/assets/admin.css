@@ -300,9 +300,3 @@
   display: block;
   margin-left: auto;
 }
-
-/* Hide the WP settings table header cell */
-.wrap th {
-  padding: 0;
-  width: auto;
-}

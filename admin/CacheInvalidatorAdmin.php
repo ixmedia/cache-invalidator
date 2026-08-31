@@ -407,6 +407,10 @@ class CacheInvalidatorAdmin {
      * Enqueue admin scripts and styles
      */
     public function enqueueAdminScripts() {
+        if ($hook !== 'settings_page_cache_invalidator') {
+            return;
+        }
+
         wp_enqueue_script('cache-invalidator-admin-script', plugin_dir_url(__FILE__) . 'assets/admin.js', [], null, true);
         wp_enqueue_style('cache-invalidator-admin-style', plugin_dir_url(__FILE__) . 'assets/admin.css', [], null);
     }
