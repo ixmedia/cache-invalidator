@@ -407,7 +407,8 @@ class CacheInvalidatorAdmin {
      * Enqueue admin scripts and styles
      */
     public function enqueueAdminScripts() {
-        if ($hook !== 'settings_page_cache_invalidator') {
+        global $wp_version;
+        if (version_compare($wp_version, '7.0', '>=') && $hook !== 'settings_page_cache_invalidator') {
             return;
         }
 
