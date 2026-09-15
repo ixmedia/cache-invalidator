@@ -42,7 +42,7 @@ class CacheInvalidatorAdmin {
      * Display the settings page
      */
     public function optionsPage() {
-        ?>
+?>
         <div class="wrap cache-inv-wrap">
             <h1><?php _e('Cache Invalidation Settings', 'cache_invalidator'); ?></h1>
             <form action="options.php" method="post">
@@ -79,7 +79,7 @@ class CacheInvalidatorAdmin {
                 <?php submit_button(); ?>
             </form>
         </div>
-        <?php
+    <?php
     }
 
     /**
@@ -91,12 +91,12 @@ class CacheInvalidatorAdmin {
      * @param string $html Ready-to-print HTML shown inside the tooltip.
      */
     private function helpTip(string $html) {
-        ?>
+    ?>
         <span class="cache-inv-help-tip" tabindex="0" role="note" aria-label="<?php echo esc_attr__('Help', 'cache_invalidator'); ?>">
             <span class="dashicons dashicons-editor-help"></span>
             <span class="cache-inv-tip-content"><?php echo $html; ?></span>
         </span>
-        <?php
+    <?php
     }
 
     /**
@@ -197,13 +197,13 @@ class CacheInvalidatorAdmin {
         $post_types = get_post_types(['public' => true], 'objects');
         $options = $this->getOptions();
         $postTypeTriggers = isset($options['postType']) ? $options['postType'] : [];
-        ?>
+    ?>
         <div id="postTypeTriggersRepeater" data-template="<?php echo htmlspecialchars($this->getPostTypeTriggerHtml('__index__', null, $post_types)); ?>">
             <?php foreach ($postTypeTriggers as $index => $settings): ?>
                 <?php echo $this->getPostTypeTriggerHtml($index, $settings, $post_types); ?>
             <?php endforeach; ?>
         </div>
-        <?php
+    <?php
     }
 
     /**
@@ -220,13 +220,13 @@ class CacheInvalidatorAdmin {
         $taxonomies = get_taxonomies(['public' => true], 'objects');
         $options = $this->getOptions();
         $taxonomyTriggers = isset($options['taxonomy']) ? $options['taxonomy'] : [];
-        ?>
+    ?>
         <div id="taxonomyTriggersRepeater" data-template="<?php echo htmlspecialchars($this->getTaxonomyTriggerHtml('__index__', null, $taxonomies)); ?>">
             <?php foreach ($taxonomyTriggers as $index => $settings): ?>
                 <?php echo $this->getTaxonomyTriggerHtml($index, $settings, $taxonomies); ?>
             <?php endforeach; ?>
         </div>
-        <?php
+    <?php
     }
 
     /**
@@ -251,7 +251,7 @@ class CacheInvalidatorAdmin {
         collator_asort(collator_create('root'), $post_types_array);
 
         ob_start();
-        ?>
+    ?>
         <div class="repeater-item">
             <div class="repeater-item-header">
                 <span class="dashicons dashicons-admin-post"></span>
@@ -298,7 +298,7 @@ class CacheInvalidatorAdmin {
                 </div>
             </div>
         </div>
-        <?php
+    <?php
         return ob_get_clean();
     }
 
@@ -314,7 +314,7 @@ class CacheInvalidatorAdmin {
         $typeValue = $settings['type'] ?? '';
         $targets = $settings['targets'] ?? [];
         ob_start();
-        ?>
+    ?>
         <div class="repeater-item">
             <div class="repeater-item-header">
                 <span class="dashicons dashicons-tag"></span>
@@ -347,7 +347,7 @@ class CacheInvalidatorAdmin {
                 </div>
             </div>
         </div>
-        <?php
+    <?php
         return ob_get_clean();
     }
 
@@ -361,14 +361,14 @@ class CacheInvalidatorAdmin {
      */
     private function getTimeFieldHtml($postTypeIndex, $timeFieldIndex = '__time_field_index__', $timeField = '') {
         ob_start();
-        ?>
+    ?>
         <div class="time-field-item">
             <input type="text" name="<?php echo $this->optionName; ?>[postType][<?php echo esc_attr($postTypeIndex); ?>][timeFields][<?php echo esc_attr($timeFieldIndex); ?>]" placeholder="<?php _e('Time Field', 'cache_invalidator'); ?>" value="<?php echo esc_attr($timeField); ?>">
             <button type="button" class="remove-icon" onclick="removeTimeField(this)" aria-label="<?php _e('Remove Time Field', 'cache_invalidator'); ?>">
                 <span class="dashicons dashicons-no-alt"></span>
             </button>
         </div>
-        <?php
+    <?php
         return ob_get_clean();
     }
 
@@ -384,7 +384,7 @@ class CacheInvalidatorAdmin {
         $targetType = $target['type'] ?? '';
         $targetValue = $target['value'] ?? '';
         ob_start();
-        ?>
+    ?>
         <div class="target-item">
             <select name="<?php echo $this->optionName; ?>[<?php echo $elementType; ?>][<?php echo esc_attr($elementIndex); ?>][targets][<?php echo esc_attr($targetIndex); ?>][type]" onchange="toggleTargetValueInput(this)">
                 <option value=""><?php _e('Select type', 'cache_invalidator'); ?></option>
@@ -399,16 +399,18 @@ class CacheInvalidatorAdmin {
                 <span class="dashicons dashicons-no-alt"></span>
             </button>
         </div>
-        <?php
+<?php
         return ob_get_clean();
     }
 
     /**
      * Enqueue admin scripts and styles
+     *
+     * @param string $hook_suffix The current admin page hook suffix.
      */
-    public function enqueueAdminScripts() {
+    public function enqueueAdminScripts($hook_suffix) {
         global $wp_version;
-        if (version_compare($wp_version, '7.0', '>=') && $hook !== 'settings_page_cache_invalidator') {
+        if (version_compare($wp_version, '7.0', '<') || $hook_suffix !== 'settings_page_cache_invalidator') {
             return;
         }
 
