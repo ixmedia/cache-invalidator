@@ -34,6 +34,11 @@ class PhpFileConfigParser implements CacheInvalidationConfigParser {
         }
 
         foreach ($this->config as $type => $triggerConfigs) {
+            // The 'cron' key holds scheduled Gutenberg queue settings, not a trigger definition.
+            if ($type === 'cron') {
+                continue;
+            }
+
             if (!$this->isValidTriggerType($type)) {
                 continue;
             }

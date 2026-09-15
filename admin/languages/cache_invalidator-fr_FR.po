@@ -134,3 +134,21 @@ msgstr "la page d'archive d'un type de post. Valeur : le slug du type de post (e
 
 msgid "The name of an ACF field that contains a date (e.g. %s)."
 msgstr "Le nom d'un champ ACF contenant une date (ex. %s)."
+
+msgid "Scheduled Gutenberg Queue"
+msgstr "File d'attente Gutenberg planifiée"
+
+msgid "Configure Gutenberg blocks that should have their cache flushed on a recurring schedule, regardless of whether their content changed. This runs via WP-Cron."
+msgstr "Configurez les blocs Gutenberg dont le cache doit être vidé selon un horaire récurrent, peu importe si leur contenu a changé. Ceci fonctionne via WP-Cron."
+
+msgid "Gutenberg blocks (one per line)"
+msgstr "Blocs Gutenberg (un par ligne)"
+
+msgid "Example: ix/block-related-projects"
+msgstr "Exemple : ix/block-related-projects"
+
+msgid "Flush frequency (hours)"
+msgstr "Fréquence de vidage (heures)"
+
+msgid "How many hours between each scheduled cache flush for the blocks above. Checked by WP-Cron every 15 minutes."
+msgstr "Nombre d'heures entre chaque vidage planifié du cache pour les blocs ci-dessus. Vérifié par WP-Cron toutes les 15 minutes."

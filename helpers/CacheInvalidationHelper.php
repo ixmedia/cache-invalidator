@@ -61,6 +61,30 @@ class CacheInvalidationHelper {
 
 
     /**
+     * Inserts into the queue only if no entry with the same post_type and post_id already exists.
+     * Use this for scheduled re-queuing so an existing future entry is never overwritten.
+     *
+     * @param int    $postId
+     * @param string $typeName
+     * @param string $triggerType
+     * @param array  $invalidationDates
+     */
+    public static function insertIntoQueueIfNotExists(int $postId, string $typeName, string $triggerType, array $invalidationDates): void {
+        global $wpdb;
+        $table = $wpdb->prefix . 'cache_invalidation_queue';
+
+        $exists = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $table WHERE post_type = %s AND post_id = %d",
+            $typeName,
+            $postId
+        ));
+
+        if ((int) $exists === 0) {
+            self::insertIntoQueue($postId, $typeName, $triggerType, $invalidationDates);
+        }
+    }
+
+    /**
      * Retrieves entries from the cache invalidation queue where invalidation_date is in the past.
      * @return array Array of rows from the cache invalidation queue.
      */

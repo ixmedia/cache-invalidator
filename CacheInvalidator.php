@@ -57,6 +57,18 @@ class CacheInvalidator {
             $postType = $row['post_type'];
             $postId = $row['post_id'];
             $invalidationDate = $row['invalidation_date'];
+
+            if (strpos($postType, 'gutenberg:') === 0) {
+                $blockName = substr($postType, strlen('gutenberg:'));
+                if ($blockName !== '') {
+                    $cacheManager = function_exists('w3tc_flush_post') ? new W3TCManager() : new WPManager();
+                    $target = new GutenbergComponentTarget($blockName, $cacheManager);
+                    $target->invalidate();
+                }
+                CacheInvalidationHelper::deleteQueueEntry($postType, (int) $postId, $invalidationDate);
+                continue;
+            }
+
             $postStatus = get_post_status($postId);
 
             foreach ($this->getTriggers() as $trigger) {

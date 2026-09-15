@@ -1,6 +1,7 @@
 <?php
 class CacheInvalidatorAdmin {
     private $optionName = 'cache_invalidator_options';
+    private $cronOptionName = 'cache_invalidator_cron_options';
     private $optionFilePath;
 
     public function __construct() {
@@ -76,6 +77,19 @@ class CacheInvalidatorAdmin {
                     </div>
                 </div>
 
+                <div class="cache-inv-card">
+                    <div class="cache-inv-card-header">
+                        <h2>
+                            <span class="dashicons dashicons-update"></span>
+                            <?php _e('Scheduled Gutenberg Queue', 'cache_invalidator'); ?>
+                        </h2>
+                    </div>
+                    <div class="cache-inv-card-body">
+                        <p class="cache-inv-section-desc"><?php _e('Configure Gutenberg blocks that should have their cache flushed on a recurring schedule, regardless of whether their content changed. This runs via WP-Cron.', 'cache_invalidator'); ?></p>
+                        <?php $this->cronSettingsRender(); ?>
+                    </div>
+                </div>
+
                 <?php submit_button(); ?>
             </form>
         </div>
@@ -130,6 +144,7 @@ class CacheInvalidatorAdmin {
      */
     public function settingsInit() {
         register_setting($this->optionName, $this->optionName, ['sanitize_callback' => [$this, 'saveOptionsToFile']]);
+        register_setting($this->optionName, $this->cronOptionName, ['sanitize_callback' => [$this, 'sanitizeCronOptions']]);
 
         // Section for postType triggers
         add_settings_section(
@@ -168,8 +183,80 @@ class CacheInvalidatorAdmin {
      * Save options to file
      */
     public function saveOptionsToFile($options) {
-        file_put_contents($this->optionFilePath, json_encode($options));
+        $existing = $this->getOptions();
+        $merged = array_merge($existing, $options);
+        file_put_contents($this->optionFilePath, json_encode($merged));
         return $options;
+    }
+
+    /**
+     * Render the scheduled Gutenberg queue settings
+     */
+    public function cronSettingsRender() {
+        $options = $this->getOptions();
+        $cronConfig = isset($options['cron']) && is_array($options['cron']) ? $options['cron'] : [];
+        $blocks = isset($cronConfig['gutenbergBlocks']) && is_array($cronConfig['gutenbergBlocks']) ? $cronConfig['gutenbergBlocks'] : [];
+        $blocksText = implode("\n", array_filter($blocks, static function ($block) {
+            return is_string($block) && $block !== '';
+        }));
+        $intervalHours = isset($cronConfig['intervalHours']) ? (int) $cronConfig['intervalHours'] : 6;
+        ?>
+        <div class="cache-invalidator-cron-settings">
+            <p>
+                <label for="cache-invalidator-gutenberg-blocks"><strong><?php _e('Gutenberg blocks (one per line)', 'cache_invalidator'); ?></strong></label>
+            </p>
+            <textarea id="cache-invalidator-gutenberg-blocks" name="<?php echo esc_attr($this->cronOptionName); ?>[gutenbergBlocksText]" rows="6" cols="60" placeholder="ix/block-related-projects"><?php echo esc_textarea($blocksText); ?></textarea>
+            <p class="description"><?php _e('Example: ix/block-related-projects', 'cache_invalidator'); ?></p>
+
+            <p style="margin-top: 12px;">
+                <label for="cache-invalidator-interval-hours"><strong><?php _e('Flush frequency (hours)', 'cache_invalidator'); ?></strong></label>
+            </p>
+            <input id="cache-invalidator-interval-hours" type="number" min="1" name="<?php echo esc_attr($this->cronOptionName); ?>[intervalHours]" value="<?php echo esc_attr($intervalHours); ?>">
+            <p class="description"><?php _e('How many hours between each scheduled cache flush for the blocks above. Checked by WP-Cron every 15 minutes.', 'cache_invalidator'); ?></p>
+        </div>
+        <?php
+    }
+
+    /**
+     * Sanitize scheduled Gutenberg queue options before saving.
+     */
+    public function sanitizeCronOptions($options) {
+        $blocksText = isset($options['gutenbergBlocksText']) ? (string) $options['gutenbergBlocksText'] : '';
+        $lines = preg_split('/\r\n|\r|\n/', $blocksText);
+        $blocks = [];
+
+        foreach ($lines as $line) {
+            $block = trim($line);
+            if ($block === '') {
+                continue;
+            }
+            $blocks[] = $block;
+        }
+
+        $blocks = array_values(array_unique($blocks));
+
+        $intervalHours = isset($options['intervalHours']) ? (int) $options['intervalHours'] : 6;
+        if ($intervalHours < 1) {
+            $intervalHours = 1;
+        }
+
+        // Queue each configured block immediately so the site reflects the new list without
+        // waiting for the next WP-Cron run.
+        foreach ($blocks as $blockName) {
+            cache_invalidator_queue_gutenberg_block($blockName);
+        }
+
+        $cronConfig = [
+            'gutenbergBlocks' => $blocks,
+            'intervalHours'   => $intervalHours,
+        ];
+
+        // Persist to config.json as the source of truth.
+        $currentConfig = $this->getOptions();
+        $currentConfig['cron'] = $cronConfig;
+        file_put_contents($this->optionFilePath, json_encode($currentConfig));
+
+        return $cronConfig;
     }
 
     /**
@@ -194,7 +281,7 @@ class CacheInvalidatorAdmin {
      * Render the post type triggers field
      */
     public function postTypeTriggersRender() {
-        $post_types = get_post_types(['public' => true], 'objects');
+        $post_types = get_post_types([], 'objects');
         $options = $this->getOptions();
         $postTypeTriggers = isset($options['postType']) ? $options['postType'] : [];
     ?>
@@ -217,7 +304,7 @@ class CacheInvalidatorAdmin {
      * Render the taxonomy triggers field
      */
     public function taxonomyTriggersRender() {
-        $taxonomies = get_taxonomies(['public' => true], 'objects');
+        $taxonomies = get_taxonomies([], 'objects');
         $options = $this->getOptions();
         $taxonomyTriggers = isset($options['taxonomy']) ? $options['taxonomy'] : [];
     ?>
