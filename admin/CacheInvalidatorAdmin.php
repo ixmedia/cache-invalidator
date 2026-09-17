@@ -183,8 +183,13 @@ class CacheInvalidatorAdmin {
      * Save options to file
      */
     public function saveOptionsToFile($options) {
+        // WordPress calls this with null when the form contains no trigger fields
+        // at all (every repeater removed), so normalise before merging.
+        $options = is_array($options) ? $options : [];
         $existing = $this->getOptions();
         $merged = array_merge($existing, $options);
+        $merged['postType'] = isset($options['postType']) && is_array($options['postType']) ? $options['postType'] : [];
+        $merged['taxonomy'] = isset($options['taxonomy']) && is_array($options['taxonomy']) ? $options['taxonomy'] : [];
         file_put_contents($this->optionFilePath, json_encode($merged));
         return $options;
     }
@@ -221,6 +226,7 @@ class CacheInvalidatorAdmin {
      * Sanitize scheduled Gutenberg queue options before saving.
      */
     public function sanitizeCronOptions($options) {
+        $options = is_array($options) ? $options : [];
         $blocksText = isset($options['gutenbergBlocksText']) ? (string) $options['gutenbergBlocksText'] : '';
         $lines = preg_split('/\r\n|\r|\n/', $blocksText);
         $blocks = [];
@@ -265,7 +271,8 @@ class CacheInvalidatorAdmin {
     public function getOptions() {
         if (file_exists($this->optionFilePath)) {
             $json = file_get_contents($this->optionFilePath);
-            return json_decode($json, true);
+            $decoded = json_decode($json, true);
+            return is_array($decoded) ? $decoded : [];
         }
         return [];
     }
