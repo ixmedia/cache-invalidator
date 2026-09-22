@@ -112,12 +112,22 @@ function cache_invalidator_run_cron_queue_processing(): void {
 add_action('cache_invalidator_process_queue', 'cache_invalidator_run_cron_queue_processing');
 
 /**
+ * Single source of truth for the WP-Cron recurrence name used to check the
+ * cache invalidation queue. Change this value (and its definition below) to
+ * change the queue-processing frequency; cache_invalidator_ensure_cron_scheduled()
+ * will detect the change and reschedule the event under the new name.
+ */
+function cache_invalidator_get_cron_schedule_name(): string {
+    return 'cache_invalidator_every_minute';
+}
+
+/**
  * Register the WP-Cron recurrence used to check the cache invalidation queue.
  */
 function cache_invalidator_register_cron_schedule(array $schedules): array {
-    $schedules['cache_invalidator_fifteen_minutes'] = [
-        'interval' => 15 * MINUTE_IN_SECONDS,
-        'display'  => __('Every 15 minutes (Cache Invalidator)', 'cache_invalidator'),
+    $schedules[cache_invalidator_get_cron_schedule_name()] = [
+        'interval' => MINUTE_IN_SECONDS,
+        'display'  => __('Every minute (Cache Invalidator)', 'cache_invalidator'),
     ];
 
     return $schedules;
@@ -125,12 +135,22 @@ function cache_invalidator_register_cron_schedule(array $schedules): array {
 add_filter('cron_schedules', 'cache_invalidator_register_cron_schedule');
 
 /**
- * Make sure the recurring event is scheduled, in case activation was skipped
- * (e.g. the plugin was already active before this feature was deployed).
+ * Make sure the recurring event is scheduled under the current schedule name,
+ * in case activation was skipped (e.g. the plugin was already active before
+ * this feature was deployed) or the schedule name/interval was changed since
+ * the event was last scheduled.
  */
 function cache_invalidator_ensure_cron_scheduled(): void {
-    if (!wp_next_scheduled('cache_invalidator_process_queue')) {
-        wp_schedule_event(time(), 'cache_invalidator_fifteen_minutes', 'cache_invalidator_process_queue');
+    $scheduleName = cache_invalidator_get_cron_schedule_name();
+    $event = wp_get_scheduled_event('cache_invalidator_process_queue');
+
+    if ($event && $event->schedule !== $scheduleName) {
+        wp_clear_scheduled_hook('cache_invalidator_process_queue');
+        $event = null;
+    }
+
+    if (!$event) {
+        wp_schedule_event(time(), $scheduleName, 'cache_invalidator_process_queue');
     }
 }
 add_action('plugins_loaded', 'cache_invalidator_ensure_cron_scheduled');
@@ -141,10 +161,7 @@ function cache_invalidator_activate(): void {
 register_activation_hook(__FILE__, 'cache_invalidator_activate');
 
 function cache_invalidator_deactivate(): void {
-    $timestamp = wp_next_scheduled('cache_invalidator_process_queue');
-    if ($timestamp) {
-        wp_unschedule_event($timestamp, 'cache_invalidator_process_queue');
-    }
+    wp_clear_scheduled_hook('cache_invalidator_process_queue');
 }
 register_deactivation_hook(__FILE__, 'cache_invalidator_deactivate');
 
