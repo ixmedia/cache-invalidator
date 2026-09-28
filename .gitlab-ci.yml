@@ -1,5 +1,5 @@
 # On a version tag, write the tag version in the "Version:" header of init.php on the default branch.
-# Requires a RELEASE_TOKEN CI/CD variable (project access token, Maintainer, write_repository). See README.
+# Pushes with CI_JOB_TOKEN: requires Settings > CI/CD > Job token permissions > "Allow Git push requests to the repository".
 bump-version:
   image: alpine:3
   rules:
@@ -8,12 +8,8 @@ bump-version:
     - apk add --no-cache git
     - |
       set -e
-      if [ -z "$RELEASE_TOKEN" ]; then
-        echo "RELEASE_TOKEN is empty: add it in Settings > CI/CD > Variables, and uncheck 'Protected' (tags are not protected)."
-        exit 1
-      fi
       VERSION="${CI_COMMIT_TAG#v}"
-      git clone --branch "$CI_DEFAULT_BRANCH" "${CI_SERVER_PROTOCOL}://oauth2:${RELEASE_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/${CI_PROJECT_PATH}.git" repo
+      git clone --branch "$CI_DEFAULT_BRANCH" "${CI_SERVER_PROTOCOL}://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/${CI_PROJECT_PATH}.git" repo
       cd repo
 
       CURRENT=$(sed -n -E 's/^ \* Version: *//p' init.php)

@@ -150,11 +150,10 @@ C'est tout. Deux automatisations s'occupent du reste :
 
 ### Configuration initiale (une seule fois)
 
-Le job GitLab a besoin d'un token pour pousser sur `main` :
+Le job GitLab pousse sur `main` avec le token fourni automatiquement par GitLab CI (`CI_JOB_TOKEN`). Il faut seulement l'autoriser à pousser :
 
-1. Dans GitLab, allez dans **Settings › Access tokens** et créez un **Project access token** avec le rôle *Maintainer* et le scope `write_repository`.
-2. Dans **Settings › CI/CD › Variables**, ajoutez la variable `RELEASE_TOKEN` avec ce token. Cochez *Masked*, mais **pas** *Protected*, sauf si vos tags sont protégés.
-3. Si `main` est une branche protégée, vérifiez dans **Settings › Repository › Protected branches** que les Maintainers ont le droit de pousser.
+1. Dans GitLab, allez dans **Settings › CI/CD › Job token permissions** et cochez **Allow Git push requests to the repository**.
+2. Le job pousse avec les droits de la personne qui a créé le tag. Cette personne doit donc pouvoir pousser sur `main` (voir **Settings › Repository › Protected branches** si `main` est protégée).
 
 Il faut aussi qu'un runner GitLab soit disponible pour ce projet.
 
