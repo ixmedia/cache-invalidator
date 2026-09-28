@@ -103,71 +103,71 @@ return [
 ```
 
 
-## Versions et mises à jour
+## Versions and updates
 
-WordPress propose automatiquement les mises à jour du plugin dans **Extensions** à partir des Releases GitHub de [ixmedia/cache-invalidator](https://github.com/ixmedia/cache-invalidator). Cette fonctionnalité utilise la librairie [Plugin Update Checker](https://github.com/YahnisElsts/plugin-update-checker), incluse dans `lib/`.
+WordPress automatically offers plugin updates in **Plugins**, based on the GitHub Releases of [ixmedia/cache-invalidator](https://github.com/ixmedia/cache-invalidator). This feature uses the [Plugin Update Checker](https://github.com/YahnisElsts/plugin-update-checker) library, included in `lib/`.
 
-**La version du plugin, c'est le tag git.** Ne modifiez pas l'en-tête `Version:` de `init.php` à la main. Il est mis à jour automatiquement après chaque tag, dans `main` et dans le zip de la Release.
+**The plugin version is the git tag.** Do not edit the `Version:` header in `init.php` by hand. It is updated automatically after each tag, both on `main` and in the Release zip.
 
-### Créer une nouvelle version
+### Creating a new version
 
-1. Commitez et poussez vos changements sur `main` :
+1. Commit and push your changes to `main`:
 
    ```bash
    git push origin main
    ```
 
-2. Choisissez le numéro de version en suivant [SemVer](https://semver.org/lang/fr/) (`MAJEUR.MINEUR.CORRECTIF`) :
-   - `1.0.1` : correction de bug
-   - `1.1.0` : nouvelle fonctionnalité compatible
-   - `2.0.0` : changement incompatible
+2. Choose the version number following [SemVer](https://semver.org/) (`MAJOR.MINOR.PATCH`):
+   - `1.0.1`: bug fix
+   - `1.1.0`: backward-compatible new feature
+   - `2.0.0`: breaking change
 
-   Pour voir le dernier tag : `git tag --sort=-v:refname | head -1`
+   To see the latest tag: `git tag --sort=-v:refname | head -1`
 
-3. Créez le tag **sur GitLab**, puis poussez-le :
+3. Create the tag **on GitLab**, then push it:
 
    ```bash
    git tag 1.1.0
    git push origin 1.1.0
    ```
 
-   Vous pouvez aussi le créer dans l'interface GitLab (**Code › Tags › New tag**). Ne créez pas le tag sur GitHub : le job GitLab qui met à jour `main` ne se lancerait pas.
+   You can also create it in the GitLab interface (**Code › Tags › New tag**). Do not create the tag on GitHub: the GitLab job that updates `main` would not run.
 
-4. Récupérez le commit de version créé par GitLab CI :
+4. Pull the version commit created by GitLab CI:
 
    ```bash
    git pull
    ```
 
-   Un commit « Bump version to 1.1.0 » apparaît sur `main`, et `init.php` contient `Version: 1.1.0`.
+   A "Bump version to 1.1.0" commit appears on `main`, and `init.php` contains `Version: 1.1.0`.
 
-5. Vérifiez que la Release a été créée : dans l'onglet [Actions](https://github.com/ixmedia/cache-invalidator/actions) sur GitHub, le workflow **Release** doit être vert. Ensuite, dans [Releases](https://github.com/ixmedia/cache-invalidator/releases), la version doit apparaître avec le fichier `cache-invalidator.zip`.
+5. Check that the Release was created: in the [Actions](https://github.com/ixmedia/cache-invalidator/actions) tab on GitHub, the **Release** workflow should be green. Then, in [Releases](https://github.com/ixmedia/cache-invalidator/releases), the version should appear with the `cache-invalidator.zip` file.
 
-C'est tout. Deux automatisations s'occupent du reste :
+That's it. Two automations take care of the rest:
 
-- **GitLab CI** (`.gitlab-ci.yml`) écrit le numéro du tag dans l'en-tête `Version:` de `init.php`, puis pousse ce commit sur `main`.
-- **GitHub Actions** (`.github/workflows/release.yml`) crée le fichier `cache-invalidator.zip` avec la bonne version, puis crée la Release GitHub avec des notes de version générées automatiquement.
+- **GitLab CI** (`.gitlab-ci.yml`) writes the tag number into the `Version:` header of `init.php`, then pushes that commit to `main`.
+- **GitHub Actions** (`.github/workflows/release.yml`) builds the `cache-invalidator.zip` file with the correct version, then creates the GitHub Release with automatically generated release notes.
 
-### Configuration initiale (une seule fois)
+### Initial setup (one time only)
 
-Le job GitLab pousse sur `main` avec le token fourni automatiquement par GitLab CI (`CI_JOB_TOKEN`). Il faut seulement l'autoriser à pousser :
+The GitLab job pushes to `main` using the token GitLab CI provides automatically (`CI_JOB_TOKEN`). You only need to allow it to push:
 
-1. Dans GitLab, allez dans **Settings › CI/CD › Job token permissions** et cochez **Allow Git push requests to the repository**.
-2. Le job pousse avec les droits de la personne qui a créé le tag. Cette personne doit donc pouvoir pousser sur `main` (voir **Settings › Repository › Protected branches** si `main` est protégée).
+1. In GitLab, go to **Settings › CI/CD › Job token permissions** and check **Allow Git push requests to the repository**.
+2. The job pushes with the permissions of the person who created the tag. That person must therefore be allowed to push to `main` (see **Settings › Repository › Protected branches** if `main` is protected).
 
-Il faut aussi qu'un runner GitLab soit disponible pour ce projet.
+A GitLab runner must also be available for this project.
 
-### Mettre à jour un site
+### Updating a site
 
-- Les sites vérifient les mises à jour toutes les 12 heures.
-- Pour forcer une vérification, allez dans **Extensions** et cliquez sur **Vérifier les mises à jour** sous *Cache Invalidator*.
-- Quand la nouvelle version apparaît, cliquez sur **Mettre à jour maintenant**, comme pour n'importe quelle extension.
+- Sites check for updates every 12 hours.
+- To force a check, go to **Plugins** and click **Check for updates** under *Cache Invalidator*.
+- When the new version appears, click **Update now**, as with any other plugin.
 
-### Bon à savoir
+### Good to know
 
-- Le tag peut s'écrire `1.1.0` ou `v1.1.0`.
-- Un numéro de version déjà utilisé ne peut pas être réutilisé. Si une Release est ratée, créez le tag suivant (par exemple `1.1.1`).
-- Si le job GitLab `bump-version` échoue parce que quelqu'un a poussé sur `main` au même moment, relancez-le simplement.
-- Si le workflow GitHub ne se lance pas après un tag créé sur GitLab, vérifiez que le miroir GitLab → GitHub utilise un token personnel (PAT) GitHub.
-- Le tag pointe sur le commit d'avant le « Bump version ». Le plugin en tient compte : il se fie au numéro du tag pour détecter les mises à jour.
-- En développement local, le plugin est un clone git. N'utilisez pas le bouton de mise à jour de WordPress en local : il remplacerait le dossier et supprimerait le clone. Faites un `git pull` à la place.
+- The tag can be written as `1.1.0` or `v1.1.0`.
+- A version number that has already been used cannot be reused. If a Release fails, create the next tag (for example `1.1.1`).
+- If the GitLab `bump-version` job fails because someone pushed to `main` at the same time, simply re-run it.
+- If the GitHub workflow does not start after a tag created on GitLab, make sure the GitLab → GitHub mirror uses a GitHub personal access token (PAT).
+- The tag points to the commit before the "Bump version" commit. The plugin accounts for this: it relies on the tag number to detect updates.
+- In local development, the plugin is a git clone. Do not use the WordPress update button locally: it would replace the folder and delete the clone. Run `git pull` instead.
