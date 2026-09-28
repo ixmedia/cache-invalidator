@@ -1,0 +1,25 @@
+# On a version tag, write the tag version in the "Version:" header of init.php on the default branch.
+# Requires a RELEASE_TOKEN CI/CD variable (project access token, Maintainer, write_repository). See README.
+bump-version:
+  image: alpine:3
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v?\d+\.\d+\.\d+$/'
+  script:
+    - apk add --no-cache git
+    - |
+      set -e
+      VERSION="${CI_COMMIT_TAG#v}"
+      git clone --branch "$CI_DEFAULT_BRANCH" "${CI_SERVER_PROTOCOL}://oauth2:${RELEASE_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/${CI_PROJECT_PATH}.git" repo
+      cd repo
+
+      CURRENT=$(sed -n -E 's/^ \* Version: *//p' init.php)
+      # Never go backwards (e.g. an old version tag pushed late)
+      HIGHEST=$(printf '%s\n%s\n' "$CURRENT" "$VERSION" | sort -V | tail -1)
+      if [ "$CURRENT" = "$VERSION" ] || [ "$HIGHEST" != "$VERSION" ]; then
+        echo "Nothing to do: init.php is already at $CURRENT"
+        exit 0
+      fi
+
+      sed -i -E "s/^( \* Version:).*/\1 ${VERSION}/" init.php
+      git -c user.name="GitLab CI" -c user.email="ci@${CI_SERVER_HOST}" commit -am "Bump version to ${VERSION} [skip ci]"
+      git push origin "$CI_DEFAULT_BRANCH"
