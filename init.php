@@ -23,8 +23,8 @@ if ($cacheInvalidatorVcsApi instanceof GitHubApi) {
     $cacheInvalidatorVcsApi->enableReleaseAssets('/cache-invalidator\.zip/');
 }
 
-// The "Version:" header is only rewritten in the release zip, not in git. PUC reads that header from
-// the tagged source (still the old version), so use the release tag as the version instead.
+// A tag points to the commit before GitLab CI bumps the "Version:" header on main. PUC reads that header
+// from the tagged source (still the previous version), so use the release tag as the version instead.
 add_filter($cacheInvalidatorUpdateChecker->getUniqueName('request_info_result'), function ($info) {
     if ($info && preg_match('#/releases/download/v?([^/]+)/#', (string) $info->download_url, $matches)) {
         $info->version = $matches[1];

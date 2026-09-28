@@ -21,5 +21,6 @@ bump-version:
       fi
 
       sed -i -E "s/^( \* Version:).*/\1 ${VERSION}/" init.php
-      git -c user.name="GitLab CI" -c user.email="ci@${CI_SERVER_HOST}" commit -am "Bump version to ${VERSION} [skip ci]"
-      git push origin "$CI_DEFAULT_BRANCH"
+      git -c user.name="GitLab CI" -c user.email="ci@${CI_SERVER_HOST}" commit -am "Bump version to ${VERSION}"
+      # ci.skip skips only this push, unlike "[skip ci]" which would also skip a later tag on this commit
+      git push -o ci.skip origin "$CI_DEFAULT_BRANCH"
