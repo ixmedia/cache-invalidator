@@ -7,6 +7,21 @@
  */
 require_once __DIR__ . '/parser/PhpFileConfigParser.php';
 require_once __DIR__ . '/CacheInvalidator.php';
+require_once __DIR__ . '/lib/plugin-update-checker/plugin-update-checker.php';
+
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+use YahnisElsts\PluginUpdateChecker\v5p7\Vcs\GitHubApi;
+
+// Offer plugin updates in wp-admin from GitHub releases (one release per git tag)
+$cacheInvalidatorUpdateChecker = PucFactory::buildUpdateChecker(
+    'https://github.com/ixmedia/cache-invalidator/',
+    __FILE__,
+    'cache-invalidator'
+);
+$cacheInvalidatorVcsApi = $cacheInvalidatorUpdateChecker->getVcsApi();
+if ($cacheInvalidatorVcsApi instanceof GitHubApi) {
+    $cacheInvalidatorVcsApi->enableReleaseAssets('/cache-invalidator\.zip/');
+}
 
 // Function to get configuration from config.json
 function get_cache_invalidator_config() {

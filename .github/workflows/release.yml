@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build plugin zip
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          mkdir -p build/cache-invalidator
+          rsync -a --exclude='.git' --exclude='.github' --exclude='build' ./ build/cache-invalidator/
+          sed -i -E "s/^( \* Version:).*/\1 ${VERSION}/" build/cache-invalidator/init.php
+          grep -q "^ \* Version: ${VERSION}$" build/cache-invalidator/init.php
+          cd build && zip -rq cache-invalidator.zip cache-invalidator
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/cache-invalidator.zip
+          generate_release_notes: true

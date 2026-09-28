@@ -100,4 +100,56 @@ return [
         ]
     ],
 ];
+```
 
+
+## Versions et mises à jour
+
+WordPress propose automatiquement les mises à jour du plugin dans **Extensions** à partir des Releases GitHub de [ixmedia/cache-invalidator](https://github.com/ixmedia/cache-invalidator). Cette fonctionnalité utilise la librairie [Plugin Update Checker](https://github.com/YahnisElsts/plugin-update-checker), incluse dans `lib/`.
+
+**La version du plugin, c'est le tag git.** Il ne faut pas modifier l'en-tête `Version:` de `init.php` à la main : il est réécrit automatiquement dans le zip de la Release.
+
+### Créer une nouvelle version
+
+1. Commitez et poussez vos changements sur `main` :
+
+   ```bash
+   git push origin main
+   ```
+
+2. Choisissez le numéro de version en suivant [SemVer](https://semver.org/lang/fr/) (`MAJEUR.MINEUR.CORRECTIF`) :
+   - `1.0.1` : correction de bug
+   - `1.1.0` : nouvelle fonctionnalité compatible
+   - `2.0.0` : changement incompatible
+
+   Pour voir le dernier tag : `git tag --sort=-v:refname | head -1`
+
+3. Créez le tag, puis poussez-le :
+
+   ```bash
+   git tag 1.1.0
+   git push origin 1.1.0
+   ```
+
+   Vous pouvez aussi créer le tag depuis l'interface GitLab (**Code › Tags › New tag**) ou GitHub. Le miroir synchronise les deux.
+
+4. Vérifiez que la Release a été créée : dans l'onglet [Actions](https://github.com/ixmedia/cache-invalidator/actions) sur GitHub, le workflow **Release** doit être vert. Ensuite, dans [Releases](https://github.com/ixmedia/cache-invalidator/releases), la version doit apparaître avec le fichier `cache-invalidator.zip`.
+
+C'est tout. Le workflow `.github/workflows/release.yml` s'occupe de :
+
+1. écrire le numéro du tag dans l'en-tête `Version:` de `init.php` ;
+2. créer le fichier `cache-invalidator.zip` ;
+3. créer la Release GitHub avec le zip et des notes de version générées automatiquement.
+
+### Mettre à jour un site
+
+- Les sites vérifient les mises à jour toutes les 12 heures.
+- Pour forcer une vérification, allez dans **Extensions** et cliquez sur **Vérifier les mises à jour** sous *Cache Invalidator*.
+- Quand la nouvelle version apparaît, cliquez sur **Mettre à jour maintenant**, comme pour n'importe quelle extension.
+
+### Bon à savoir
+
+- Le tag peut s'écrire `1.1.0` ou `v1.1.0`.
+- Un numéro de version déjà utilisé ne peut pas être réutilisé. Si une Release est ratée, créez le tag suivant (par exemple `1.1.1`).
+- Si le workflow ne se lance pas après un tag créé sur GitLab, vérifiez que le miroir GitLab → GitHub utilise un token personnel (PAT) GitHub.
+- En développement local, le plugin est un clone git. N'utilisez pas le bouton de mise à jour de WordPress en local : il remplacerait le dossier et supprimerait le clone. Faites un `git pull` à la place.
